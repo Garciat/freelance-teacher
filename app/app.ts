@@ -3,7 +3,7 @@ import { z } from "zod";
 import { decorators } from "@/lib/web/decorator/base.ts";
 import { logging } from "@/lib/web/decorator/logging.ts";
 import { Cookies } from "@/lib/web/decorator/cookies.ts";
-import { localFiles, route, routes } from "@/lib/web/route.ts";
+import { bundle, localFiles, route, routes } from "@/lib/web/route.ts";
 import { BodyParsers } from "@/lib/web/body.ts";
 
 import students from "@/app/pages/students.tsx";
@@ -65,6 +65,17 @@ export default decorators([
       BodyParsers.nil(),
       invoices.index,
     ),
-    localFiles("static", import.meta.resolve("./static")),
+    localFiles(
+      "static",
+      import.meta.resolve("./static"),
+    ),
+    bundle(
+      "/shared",
+      import.meta.resolve("./shared"),
+    ),
+    bundle(
+      "/frontend",
+      import.meta.resolve("./frontend"),
+    ),
   ]),
 );

@@ -1,6 +1,8 @@
 import { z } from "zod";
 import { serveDir } from "@std/http";
 
+import * as esbuild from "npm:esbuild";
+
 import { BaseHandler, Handler } from "./types.ts";
 import { BodyParser } from "./body.ts";
 
@@ -62,7 +64,7 @@ export function routes(entries: RouteHandler[]): BaseHandler {
   };
 }
 
-export function localFiles<P, Q>(
+export function localFiles(
   urlRoot: string,
   fsRoot: string,
 ): RouteHandler {
@@ -73,6 +75,43 @@ export function localFiles<P, Q>(
   return (ctx) => {
     if (ctx.url.pathname.startsWith(`/${urlRoot}`)) {
       return serveDir(ctx.req, { urlRoot, fsRoot: actualFsRoot, quiet: true });
+    }
+    return null;
+  };
+}
+
+export function bundle(
+  urlRoot: string,
+  fsRoot: string,
+): RouteHandler {
+  const actualFsRoot = fsRoot.startsWith("file://")
+    ? fsRoot.slice("file://".length)
+    : fsRoot;
+
+  return async (ctx) => {
+    if (
+      ctx.url.pathname.startsWith(urlRoot) &&
+      (ctx.url.pathname.endsWith(".tsx") || ctx.url.pathname.endsWith(".ts"))
+    ) {
+      const path = `${actualFsRoot}/${ctx.url.pathname.slice(urlRoot.length)}`;
+
+      const result = await esbuild.build({
+        plugins: [],
+        entryPoints: [path],
+        bundle: false,
+        format: "esm",
+        write: false,
+      });
+
+      if (result.errors.length) {
+        throw new Error(result.errors.map((err) => err.text).join("\n"));
+      }
+
+      return new Response(result.outputFiles?.at(0)?.text, {
+        headers: {
+          "content-type": "application/javascript",
+        },
+      });
     }
     return null;
   };
