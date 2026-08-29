@@ -4,6 +4,7 @@
     "react": "npm:react@^19",
     "react-dom": "npm:react-dom@^19",
     "@types/react": "npm:@types/react@^19",
+    "@react-pdf/renderer": "npm:@react-pdf/renderer@^4",
     "zod": "npm:zod@^4",
     "@opentelemetry/api": "npm:@opentelemetry/api@^1",
     "@std/http": "jsr:@std/http@^1"

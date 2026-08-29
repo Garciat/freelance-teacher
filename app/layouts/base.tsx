@@ -17,8 +17,13 @@ export const BaseLayout: React.FC<BaseLayoutProps> = (
           "imports": {
             "@/app/frontend/": "/frontend/",
             "@/app/shared/": "/shared/",
-            "react/": "https://esm.sh/react@^19/",
-            "react-dom/": "https://esm.sh/react-dom@^19/",
+            "react": "https://cdn.jsdelivr.net/npm/react/+esm",
+            "react/jsx-runtime":
+              "https://cdn.jsdelivr.net/npm/react/jsx-runtime/+esm",
+            "react-dom/client":
+              "https://cdn.jsdelivr.net/npm/react-dom/client/+esm",
+            "@react-pdf/renderer":
+              "https://cdn.jsdelivr.net/npm/@react-pdf/renderer/+esm",
           },
         })}
       </script>

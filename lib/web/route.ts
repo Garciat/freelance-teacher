@@ -101,6 +101,7 @@ export function bundle(
         bundle: false,
         format: "esm",
         write: false,
+        jsx: "automatic",
       });
 
       if (result.errors.length) {

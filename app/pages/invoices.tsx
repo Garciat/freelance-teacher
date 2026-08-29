@@ -6,7 +6,8 @@ export default {
   index() {
     return jsx(
       <PageLayout title="Invoices">
-        <p>TODO</p>
+        <div id="root"></div>
+        <script type="module" src="/frontend/example.tsx"></script>
       </PageLayout>,
     );
   },
