@@ -1,4 +1,3 @@
-import { FormHTMLAttributes, FunctionComponent } from "preact";
 import z from "zod";
 
 export type UIFieldMeta = {
@@ -45,15 +44,15 @@ export function makePostSchema<T extends z.ZodRawShape>(
   ]);
 }
 
-export const SchemaBasedForm: FunctionComponent<
-  { schema: z.ZodObject } & FormHTMLAttributes
+export const SchemaBasedForm: React.FC<
+  { schema: z.ZodObject } & React.ComponentPropsWithoutRef<"form">
 > = (
   { schema, ...propsForm },
 ) => {
   const fields = generateFormConfig(schema);
 
   return (
-    <div class="schema-form">
+    <div className="schema-form">
       <form {...propsForm}>
         {fields.map((field) => (
           <div key={field.name} className="form-group">
@@ -82,9 +81,9 @@ export const SchemaBasedForm: FunctionComponent<
               )}
           </div>
         ))}
-        <footer class="actions">
+        <footer className="actions">
           <button type="submit" name="action" value="save">Register</button>
-          <button type="submit" name="action" value="cancel" formnovalidate>
+          <button type="submit" name="action" value="cancel" formNoValidate>
             Cancel
           </button>
         </footer>

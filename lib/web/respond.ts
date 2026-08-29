@@ -1,12 +1,8 @@
-import { VNode } from "preact";
-import { render } from "preact-render-to-string/jsx";
+// @ts-types="npm:@types/react-dom/server"
+import { renderToReadableStream } from "react-dom/server";
 
-export function jsx(vnode: VNode) {
-  const html = render(vnode, {}, { pretty: "  " });
-
-  const body = `<!DOCTYPE html>\n${html}`;
-
-  return new Response(body, {
+export async function jsx(vnode: React.ReactNode) {
+  return new Response(await renderToReadableStream(vnode), {
     headers: { "content-type": "text/html; charset=utf-8" },
   });
 }

@@ -1,5 +1,3 @@
-import { FunctionComponent } from "preact";
-
 import { BaseLayout, BaseLayoutProps } from "@/app/layouts/base.tsx";
 
 export type PageLayoutProps = BaseLayoutProps;
@@ -10,12 +8,12 @@ const nav = [
   { label: "Invoices", href: "/invoices/" },
 ];
 
-export const PageLayout: FunctionComponent<PageLayoutProps> = (
+export const PageLayout: React.FC<PageLayoutProps> = (
   { title, children },
 ) => (
   <BaseLayout title={title}>
     <main>
-      <header class="site-navigation">
+      <header className="site-navigation">
         <h1>Freelance Teacher</h1>
         <nav>
           <ul>
@@ -29,7 +27,7 @@ export const PageLayout: FunctionComponent<PageLayoutProps> = (
           </ul>
         </nav>
       </header>
-      <div class="content">
+      <div className="content">
         <h2>{title}</h2>
         {children}
       </div>
