@@ -1,0 +1,113 @@
+html {
+  font-family:
+    system-ui,
+    -apple-system,
+    Segoe UI,
+    Roboto,
+    Helvetica,
+    Arial,
+    sans-serif,
+    Apple Color Emoji,
+    Segoe UI Emoji;
+  font-size: 1.3rem;
+  font-weight: 350;
+  font-size: clamp(18px, 100vw / var(--width), 20px);
+  line-height: 1.5;
+}
+
+body > main {
+  max-width: 920px;
+  margin: 0 auto;
+}
+
+a {
+  text-decoration: none;
+}
+
+.site-navigation {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  h1 {
+    margin: 0;
+  }
+
+  nav {
+    ul {
+      display: flex;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+
+      a {
+        display: block;
+        padding: 20px 5px;
+        color: inherit;
+        text-decoration: none;
+
+        transition: background-color .2s ease,color .2s ease;
+
+        > span {
+          padding: 12px 15px;
+          border-radius: 36px;
+        }
+
+        &:hover > span {
+          background-color: #CCC;
+        }
+      }
+    }
+  }
+}
+
+table {
+  width: 100%;
+  margin: 1em 0;
+  border-spacing: 0;
+
+  thead {
+    background: #CCC;
+  }
+
+  th {
+    text-align: left;
+  }
+
+  th,
+  td {
+    padding: 0.1em 0.5em;
+  }
+}
+
+input,
+button {
+  box-sizing: border-box;
+  font-size: 100%;
+}
+
+.schema-form {
+  max-width: 480px;
+  margin: 0 auto;
+
+  .form-group {
+    margin: 1em 0;
+  }
+
+  .actions {
+    display: flex;
+    justify-content: center;
+    column-gap: 1em;
+  }
+
+  label,
+  input {
+    display: block;
+    width: 100%;
+    padding: 5px;
+  }
+
+  button {
+    padding: 5px 10px;
+  }
+}
