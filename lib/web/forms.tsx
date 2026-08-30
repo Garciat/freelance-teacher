@@ -8,12 +8,14 @@ export type UIFieldMeta = {
 
 export const FormRegistry = z.registry<UIFieldMeta>();
 
-interface FormFieldConfig extends UIFieldMeta {
+interface FormFieldConfig<T> extends UIFieldMeta {
   name: string;
   required: boolean;
 }
 
-function generateFormConfig(schema: z.ZodObject): FormFieldConfig[] {
+function generateFormConfig<T>(
+  schema: z.ZodObject,
+): FormFieldConfig<T>[] {
   return Array.from(function* () {
     for (const [fieldName, fieldSchema] of Object.entries(schema.shape)) {
       const meta = FormRegistry.get(fieldSchema);
@@ -25,7 +27,7 @@ function generateFormConfig(schema: z.ZodObject): FormFieldConfig[] {
         fieldSchema instanceof z.ZodNullable);
 
       yield {
-        name: fieldName,
+        name: fieldName as Extract<keyof T, string>,
         label: meta.label,
         type: meta.type,
         placeholder: meta.placeholder,
@@ -35,6 +37,16 @@ function generateFormConfig(schema: z.ZodObject): FormFieldConfig[] {
   }());
 }
 
+function makeFormDataCodec<T extends z.ZodRawShape>(schema: z.ZodObject<T>) {
+  return z.codec(
+    z.record(z.string(), z.string()),
+    schema,
+    {
+      decode: (value) => value as z.input<typeof schema>,
+      encode: (value) => value as Record<string, string>,
+    },
+  );
+}
 export function makePostSchema<T extends z.ZodRawShape>(
   schema: z.ZodObject<T>,
 ) {
@@ -44,12 +56,21 @@ export function makePostSchema<T extends z.ZodRawShape>(
   ]);
 }
 
-export const SchemaBasedForm: React.FC<
-  { schema: z.ZodObject } & React.ComponentPropsWithoutRef<"form">
-> = (
-  { schema, ...propsForm },
-) => {
+type SchemaBasedFormProps<T extends z.ZodRawShape> = {
+  schema: z.ZodObject<T>;
+  value?: z.output<z.ZodObject<T>>;
+} & React.ComponentPropsWithoutRef<"form">;
+
+export const SchemaBasedForm = <T extends z.ZodRawShape>({
+  schema,
+  value,
+  ...propsForm
+}: SchemaBasedFormProps<T>) => {
   const fields = generateFormConfig(schema);
+
+  const codec = makeFormDataCodec(schema);
+
+  const record = value && codec.encode(value);
 
   return (
     <div className="schema-form">
@@ -77,12 +98,13 @@ export const SchemaBasedForm: React.FC<
                   placeholder={field.placeholder}
                   required={field.required}
                   defaultChecked={field.type === "checkbox" ? false : undefined}
+                  value={record?.[field.name]}
                 />
               )}
           </div>
         ))}
         <footer className="actions">
-          <button type="submit" name="action" value="save">Register</button>
+          <button type="submit" name="action" value="save">OK</button>
           <button type="submit" name="action" value="cancel" formNoValidate>
             Cancel
           </button>

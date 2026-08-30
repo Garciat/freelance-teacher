@@ -18,6 +18,14 @@ html {
 body > main {
   max-width: 920px;
   margin: 0 auto;
+
+  > footer {
+    margin-top: 5em;
+    padding: 2em 0;
+    border-top: 1px solid #CCC;
+    color: #555;
+    font-size: 80%;
+  }
 }
 
 a {
@@ -26,6 +34,10 @@ a {
 
 iframe {
   border: 0;
+}
+
+.text-center {
+  text-align: center;
 }
 
 .site-navigation {

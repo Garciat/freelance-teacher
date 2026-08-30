@@ -4,6 +4,7 @@ export type PageLayoutProps = BaseLayoutProps;
 
 const nav = [
   { label: "Home", href: "/" },
+  { label: "Business", href: "/business/" },
   { label: "Students", href: "/students/" },
   { label: "Invoices", href: "/invoices/" },
 ];
@@ -31,6 +32,9 @@ export const PageLayout: React.FC<PageLayoutProps> = (
         <h2>{title}</h2>
         {children}
       </div>
+      <footer>
+        <p className="text-center">This is the footer (:</p>
+      </footer>
     </main>
   </BaseLayout>
 );

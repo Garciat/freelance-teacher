@@ -3,9 +3,10 @@ import { logging } from "@/lib/web/decorator/logging.ts";
 import { Cookies } from "@/lib/web/decorator/cookies.ts";
 import { bundle, localFiles, routes } from "@/lib/web/route.ts";
 
-import * as students from "@/app/pages/students.tsx";
+import * as business from "@/app/pages/business.tsx";
 import * as home from "@/app/pages/home.tsx";
 import * as invoices from "@/app/pages/invoices.tsx";
+import * as students from "@/app/pages/students.tsx";
 
 export default decorators([
   logging(),
@@ -13,6 +14,7 @@ export default decorators([
 ])(
   routes([
     ...home.routes,
+    ...business.routes,
     ...students.routes,
     ...invoices.routes,
     localFiles(
