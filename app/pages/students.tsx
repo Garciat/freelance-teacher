@@ -35,17 +35,11 @@ const RegisterFormSchema = z.object({
   }),
 });
 
-const RegisterPostSchema = makePostSchema(RegisterFormSchema);
-
-const DeleteSchema = z.object({});
-
 export const routes = [
   route(
     "GET",
-    new URLPattern({ pathname: "/students/" }),
-    z.object(),
-    z.object(),
-    BodyParsers.nil(),
+    { pathname: "/students/" },
+    {},
     async () => {
       const items = await Array.fromAsync(
         student.list(),
@@ -84,10 +78,8 @@ export const routes = [
   ),
   route(
     "GET",
-    new URLPattern({ pathname: "/students/register" }),
-    z.object(),
-    z.object(),
-    BodyParsers.nil(),
+    { pathname: "/students/register" },
+    {},
     () =>
       jsx(
         <PageLayout title="Students">
@@ -101,10 +93,10 @@ export const routes = [
   ),
   route(
     "POST",
-    new URLPattern({ pathname: "/students/register" }),
-    z.object(),
-    z.object(),
-    BodyParsers.formData(RegisterPostSchema),
+    { pathname: "/students/register" },
+    {
+      body: BodyParsers.formData(makePostSchema(RegisterFormSchema)),
+    },
     async (ctx, { body }) => {
       if (body.action === "cancel") {
         return redirect303(new URL("/students/", ctx.url));
@@ -124,12 +116,13 @@ export const routes = [
   ),
   route(
     "POST",
-    new URLPattern({ pathname: "/students/:id/delete" }),
-    z.object({
-      id: z.uuid(),
-    }),
-    z.object(),
-    BodyParsers.formData(DeleteSchema),
+    { pathname: "/students/:id/delete" },
+    {
+      path: z.object({
+        id: z.uuid(),
+      }),
+      body: BodyParsers.formData(z.object({})),
+    },
     async (ctx, { path }) => {
       await student.delete(path.id);
 

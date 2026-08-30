@@ -1,53 +1,68 @@
 import { z } from "zod";
 import { serveDir } from "@std/http";
 
-import * as esbuild from "npm:esbuild";
+import * as esbuild from "esbuild";
 
 import { BaseHandler, Handler } from "./types.ts";
 import { BodyParser } from "./body.ts";
 
 export type RouteHandler = Handler<undefined, Response | null>;
 
-export function route<P, Q, B>(
+export function route<
+  P = never,
+  Q = never,
+  B = never,
+>(
   method: "GET" | "POST",
-  pattern: URLPattern,
-  pathType: z.ZodType<P>,
-  queryType: z.ZodType<Q>,
-  bodyParser: BodyParser<B>,
+  patternInit: URLPatternInit,
+  types: { path?: z.ZodType<P>; query?: z.ZodType<Q>; body?: BodyParser<B> },
   delegate: Handler<{ path: P; query: Q; body: B }, Response>,
 ): RouteHandler {
+  const pattern = new URLPattern(patternInit);
+
   return async (ctx) => {
     if (ctx.req.method !== method) return null;
 
     const match = pattern.exec(ctx.url);
     if (match === null) return null;
 
-    const path = pathType.safeDecode(match.pathname.groups);
-    if (!path.success) {
-      return new Response(
-        `invalid path for ${pattern.pathname}\n${z.prettifyError(path.error)}`,
-      );
+    const data = {} as { path: P; query: Q; body: B };
+
+    if (types.path) {
+      const result = types.path.safeParse(match.pathname.groups);
+      if (!result.success) {
+        return new Response(
+          `invalid path for ${pattern.pathname}\n${
+            z.prettifyError(result.error)
+          }`,
+        );
+      }
+      data.path = result.data;
     }
 
-    const query = queryType.safeDecode(match.search.groups);
-    if (!query.success) {
-      return new Response(
-        `invalid query for ${pattern.search}\n${z.prettifyError(query.error)}`,
-      );
+    if (types.query) {
+      const result = types.query.safeParse(match.search.groups);
+      if (!result.success) {
+        return new Response(
+          `invalid query for ${pattern.search}\n${
+            z.prettifyError(result.error)
+          }`,
+        );
+      }
+      data.query = result.data;
     }
 
-    const body = await bodyParser(ctx.req);
-    if (!body.success) {
-      return new Response(
-        `invalid body\n${z.prettifyError(body.error)}`,
-      );
+    if (types.body) {
+      const result = await types.body(ctx.req);
+      if (!result.success) {
+        return new Response(
+          `invalid body\n${z.prettifyError(result.error)}`,
+        );
+      }
+      data.body = result.data;
     }
 
-    return delegate(ctx, {
-      path: path.data,
-      query: query.data,
-      body: body.data,
-    });
+    return delegate(ctx, data);
   };
 }
 
