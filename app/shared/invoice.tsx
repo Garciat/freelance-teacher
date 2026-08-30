@@ -1,13 +1,20 @@
-import { Document, Page, StyleSheet, Text, View } from "@react-pdf/renderer";
+import {
+  Document,
+  Page,
+  renderToBuffer,
+  StyleSheet,
+  Text,
+  View,
+} from "@react-pdf/renderer";
 
 export interface InvoiceSender {
   name: string;
   address: string;
-  zipCity: string;
+  location: string;
   /** Mandatory 8-digit Dutch Chamber of Commerce number (Kamer van Koophandel) */
   kvk: string;
   /** Dutch BTW/VAT identification number (e.g., NL812345678B01) */
-  vatNumber: string;
+  vat: string;
   iban: string;
   bic: string;
 }
@@ -162,6 +169,11 @@ interface DutchInvoiceProps {
   data: DutchInvoiceData;
 }
 
+export async function renderInvoiceToBlob(data: DutchInvoiceData) {
+  const buffer = await renderToBuffer(<DutchInvoice data={data} />);
+  return new Blob([new Uint8Array(buffer)], { type: "application/pdf" });
+}
+
 export const DutchInvoice: React.FC<DutchInvoiceProps> = ({ data }) => {
   const { sender, client, invoiceMeta, items } = data;
 
@@ -181,7 +193,7 @@ export const DutchInvoice: React.FC<DutchInvoiceProps> = ({ data }) => {
           <View>
             <Text style={styles.companyName}>{sender.name}</Text>
             <Text>{sender.address}</Text>
-            <Text>{sender.zipCity}</Text>
+            <Text>{sender.location}</Text>
           </View>
           <View>
             <Text style={styles.invoiceTitle}>FACTUUR</Text>
@@ -203,7 +215,7 @@ export const DutchInvoice: React.FC<DutchInvoiceProps> = ({ data }) => {
           <View style={styles.metaBlock}>
             <Text style={styles.blockTitle}>Bedrijfsgegevens:</Text>
             <Text>KvK-nummer: {sender.kvk}</Text>
-            <Text>BTW-id: {sender.vatNumber}</Text>
+            <Text>BTW-id: {sender.vat}</Text>
             <Text>IBAN: {sender.iban}</Text>
             <Text>BIC: {sender.bic}</Text>
           </View>
@@ -260,8 +272,7 @@ export const DutchInvoice: React.FC<DutchInvoiceProps> = ({ data }) => {
             dagen te voldoen onder vermelding van het factuurnummer.
           </Text>
           <Text>
-            {sender.name} • KvK: {sender.kvk} • BTW: {sender.vatNumber} • IBAN:
-            {" "}
+            {sender.name} • KvK: {sender.kvk} • BTW: {sender.vat} • IBAN:{" "}
             {sender.iban}
           </Text>
         </View>

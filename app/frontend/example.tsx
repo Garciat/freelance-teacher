@@ -9,9 +9,9 @@ const sampleInvoiceData = {
   sender: {
     name: "Amsterdam Tech Solutions B.V.",
     address: "Keizersgracht 421",
-    zipCity: "1016 EK Amsterdam",
+    location: "1016 EK Amsterdam",
     kvk: "12345678", // Mandatory in NL
-    vatNumber: "NL812345678B01", // Mandatory in NL
+    vat: "NL812345678B01", // Mandatory in NL
     iban: "NL91 ABNA 0412 3456 78",
     bic: "ABNANL2A",
   },

@@ -1,7 +1,9 @@
 import { jsx } from "@/lib/web/respond.ts";
 import { route } from "@/lib/web/route.ts";
 
+import business from "@/app/data/business.ts";
 import { PageLayout } from "@/app/layouts/page.tsx";
+import { renderInvoiceToBlob } from "@/app/shared/invoice.tsx";
 
 export const routes = [
   route(
@@ -11,9 +13,47 @@ export const routes = [
     () =>
       jsx(
         <PageLayout title="Invoices">
-          <div id="root"></div>
-          <script type="module" src="/frontend/example.tsx"></script>
+          <iframe
+            src="/invoices/example#toolbar=0&navpanes=0&zoom=page-fit"
+            style={{ aspectRatio: "210 / 297", width: "100%" }}
+          >
+          </iframe>
         </PageLayout>,
+      ),
+  ),
+  route(
+    "GET",
+    { pathname: "/invoices/example" },
+    {},
+    async () =>
+      new Response(
+        await renderInvoiceToBlob({
+          sender: await business.get(),
+          client: {
+            name: "Rotterdam Shipping Co.",
+            address: "Coolsingel 65",
+            zipCity: "3012 AC Rotterdam",
+          },
+          invoiceMeta: {
+            number: "2026-0042", // Sequential numbering required
+            date: "29-08-2026",
+            dueDate: "12-09-2026",
+            paymentTerms: "14",
+            vatRate: 21, // Standard NL High VAT (Alternative: 9% or 0%)
+          },
+          items: [
+            {
+              description: "Frontend Development (React consulting)",
+              qty: 40,
+              price: 85.00,
+            },
+            {
+              description: "Cloud Infrastructure Setup & CI/CD pipeline",
+              qty: 1,
+              price: 1200.00,
+            },
+          ],
+        }),
       ),
   ),
 ];
