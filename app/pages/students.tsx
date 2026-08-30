@@ -1,13 +1,13 @@
 import z from "zod";
 
-import { Ctx } from "@/lib/web/ctx.ts";
-import { jsx, redirect303 } from "@/lib/web/respond.ts";
-
+import { BodyParsers } from "@/lib/web/body.ts";
 import {
   FormRegistry,
   makePostSchema,
   SchemaBasedForm,
 } from "@/lib/web/forms.tsx";
+import { jsx, redirect303 } from "@/lib/web/respond.ts";
+import { route } from "@/lib/web/route.ts";
 
 import student from "@/app/data/student.ts";
 import { PageLayout } from "@/app/layouts/page.tsx";
@@ -39,85 +39,101 @@ const RegisterPostSchema = makePostSchema(RegisterFormSchema);
 
 const DeleteSchema = z.object({});
 
-export default {
-  async index() {
-    const items = await Array.fromAsync(
-      student.list(),
-    );
+export const routes = [
+  route(
+    "GET",
+    new URLPattern({ pathname: "/students/" }),
+    z.object(),
+    z.object(),
+    BodyParsers.nil(),
+    async () => {
+      const items = await Array.fromAsync(
+        student.list(),
+      );
 
-    const displayItems = items.toSorted((a, b) =>
-      a.status.localeCompare(b.status) || a.name.localeCompare(b.name)
-    );
+      const displayItems = items.toSorted((a, b) =>
+        a.status.localeCompare(b.status) || a.name.localeCompare(b.name)
+      );
 
-    return jsx(
-      <PageLayout title="Students">
-        <a href="/students/register">Register New Student</a>
-        <table>
-          <thead>
-            <tr>
-              <th>Name</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {displayItems.map((record) => (
-              <tr key={record.id}>
-                <td>{record.name}</td>
-                <td>
-                  <form method="GET" action={`/students/manage/${record.id}`}>
-                    <button type="submit">Manage</button>
-                  </form>
-                </td>
+      return jsx(
+        <PageLayout title="Students">
+          <a href="/students/register">Register New Student</a>
+          <table>
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Actions</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
-      </PageLayout>,
-    );
-  },
+            </thead>
+            <tbody>
+              {displayItems.map((record) => (
+                <tr key={record.id}>
+                  <td>{record.name}</td>
+                  <td>
+                    <form method="GET" action={`/students/manage/${record.id}`}>
+                      <button type="submit">Manage</button>
+                    </form>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </PageLayout>,
+      );
+    },
+  ),
+  route(
+    "GET",
+    new URLPattern({ pathname: "/students/register" }),
+    z.object(),
+    z.object(),
+    BodyParsers.nil(),
+    () =>
+      jsx(
+        <PageLayout title="Students">
+          <SchemaBasedForm
+            schema={RegisterFormSchema}
+            method="POST"
+            action=""
+          />
+        </PageLayout>,
+      ),
+  ),
+  route(
+    "POST",
+    new URLPattern({ pathname: "/students/register" }),
+    z.object(),
+    z.object(),
+    BodyParsers.formData(RegisterPostSchema),
+    async (ctx, { body }) => {
+      if (body.action === "cancel") {
+        return redirect303(new URL("/students/", ctx.url));
+      }
 
-  register() {
-    return jsx(
-      <PageLayout title="Students">
-        <SchemaBasedForm
-          schema={RegisterFormSchema}
-          method="POST"
-          action=""
-        />
-      </PageLayout>,
-    );
-  },
+      await student.create({
+        name: body.name,
+        billing: {
+          name: body.billing_name,
+          address: body.billing_address,
+          location: body.billing_location,
+        },
+      });
 
-  registerPostSchema: RegisterPostSchema,
-
-  async registerPost(
-    ctx: Ctx,
-    data: { body: z.output<typeof RegisterPostSchema> },
-  ) {
-    if (data.body.action === "cancel") {
       return redirect303(new URL("/students/", ctx.url));
-    }
+    },
+  ),
+  route(
+    "POST",
+    new URLPattern({ pathname: "/students/:id/delete" }),
+    z.object({
+      id: z.uuid(),
+    }),
+    z.object(),
+    BodyParsers.formData(DeleteSchema),
+    async (ctx, { path }) => {
+      await student.delete(path.id);
 
-    await student.create({
-      name: data.body.name,
-      billing: {
-        name: data.body.billing_name,
-        address: data.body.billing_address,
-        location: data.body.billing_location,
-      },
-    });
-
-    return redirect303(new URL("/students/", ctx.url));
-  },
-
-  deleteSchema: DeleteSchema,
-
-  async delete(
-    ctx: Ctx,
-    data: { path: { id: string }; body: z.output<typeof DeleteSchema> },
-  ) {
-    await student.delete(data.path.id);
-
-    return redirect303(new URL("/students/", ctx.url));
-  },
-};
+      return redirect303(new URL("/students/", ctx.url));
+    },
+  ),
+];
