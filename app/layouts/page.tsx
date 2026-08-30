@@ -18,7 +18,7 @@ export const PageLayout: React.FC<PageLayoutProps> = (
         <nav>
           <ul>
             {nav.map((item) => (
-              <li>
+              <li key={item.href}>
                 <a href={item.href}>
                   <span>{item.label}</span>
                 </a>

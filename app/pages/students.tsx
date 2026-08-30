@@ -61,7 +61,7 @@ export default {
           </thead>
           <tbody>
             {displayItems.map((record) => (
-              <tr>
+              <tr key={record.id}>
                 <td>{record.name}</td>
                 <td>
                   <form method="GET" action={`/students/manage/${record.id}`}>
