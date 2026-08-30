@@ -24,6 +24,15 @@ export type CreateRequest = {
   };
 };
 
+export type UpdateRequest = {
+  name: string;
+  billing: {
+    name: string;
+    address: string;
+    location: string;
+  };
+};
+
 export default {
   async *list(
     options?: { includeInactive: boolean },
@@ -57,6 +66,17 @@ export default {
       throw new Error("not found");
     }
     return StudentRecordSchema.parse(entry.value);
+  },
+
+  async update(id: string, req: UpdateRequest) {
+    const entry = await core.get(["students", id]);
+    if (entry.versionstamp === null) {
+      throw new Error("not found");
+    }
+
+    const record = { ...req, id, status: "active" } satisfies StudentRecord;
+
+    core.set(["students", id], StudentRecordSchema.encode(record));
   },
 
   async delete(id: string) {

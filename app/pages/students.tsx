@@ -86,7 +86,7 @@ export const routes = [
           <SchemaBasedForm
             schema={RegisterFormSchema}
             method="POST"
-            action=""
+            action="/students/register"
           />
         </PageLayout>,
       ),
@@ -98,25 +98,76 @@ export const routes = [
       body: BodyParsers.formData(makePostSchema(RegisterFormSchema)),
     },
     async (ctx, { body }) => {
-      if (body.action === "cancel") {
-        return redirect303(new URL("/students/", ctx.url));
+      if (body.action === "save") {
+        await student.create({
+          name: body.name,
+          billing: {
+            name: body.billing_name,
+            address: body.billing_address,
+            location: body.billing_location,
+          },
+        });
       }
-
-      await student.create({
-        name: body.name,
-        billing: {
-          name: body.billing_name,
-          address: body.billing_address,
-          location: body.billing_location,
-        },
-      });
 
       return redirect303(new URL("/students/", ctx.url));
     },
   ),
   route(
+    "GET",
+    { pathname: "/students/manage/:id" },
+    {
+      path: z.object({ id: z.uuid() }),
+    },
+    async (_ctx, { path }) => {
+      const record = await student.get(path.id);
+
+      return jsx(
+        <PageLayout title="Students">
+          <SchemaBasedForm
+            schema={RegisterFormSchema}
+            method="POST"
+            action={`/students/manage/${path.id}`}
+            value={{
+              name: record.name,
+              billing_name: record.billing.name,
+              billing_address: record.billing.address,
+              billing_location: record.billing.location,
+            }}
+          />
+        </PageLayout>,
+      );
+    },
+  ),
+  route(
     "POST",
-    { pathname: "/students/:id/delete" },
+    { pathname: "/students/manage/:id" },
+    {
+      path: z.object({ id: z.uuid() }),
+      body: BodyParsers.formData(makePostSchema(RegisterFormSchema)),
+    },
+    async (ctx, { path, body }) => {
+      if (body.action === "cancel") {
+        return redirect303(new URL(`/students/`, ctx.url));
+      }
+
+      await student.update(
+        path.id,
+        {
+          name: body.name,
+          billing: {
+            name: body.billing_name,
+            address: body.billing_address,
+            location: body.billing_location,
+          },
+        },
+      );
+
+      return redirect303(new URL(`/students/manage/${path.id}`, ctx.url));
+    },
+  ),
+  route(
+    "POST",
+    { pathname: "/students/delete/:id" },
     {
       path: z.object({
         id: z.uuid(),
