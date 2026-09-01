@@ -1,18 +1,23 @@
-import { route } from "@/lib/web/route.ts";
-import { jsx } from "@/lib/web/respond.ts";
+import { Responses } from "@/lib/web/respond.ts";
+import { descriptor, route } from "@/lib/web/route.ts";
 
 import { PageLayout } from "@/app/layouts/page.tsx";
+import { Link } from "@/lib/web/link.tsx";
+
+export const descriptors = {
+  index: descriptor("GET", "/", { response: Responses.jsx }),
+};
 
 export const routes = [
   route(
-    "GET",
-    { pathname: "/" },
-    {},
-    () =>
-      jsx(
-        <PageLayout title="Home">
-          <p>Welcome 🤗</p>
-        </PageLayout>,
-      ),
+    descriptors.index,
+    () => (
+      <PageLayout title="Home">
+        <p>Welcome 🤗</p>
+        <p>
+          <Link to={descriptors.index}>Example</Link>
+        </p>
+      </PageLayout>
+    ),
   ),
 ];

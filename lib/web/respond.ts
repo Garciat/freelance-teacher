@@ -1,15 +1,33 @@
-// @ts-types="npm:@types/react-dom/server"
+import z from "zod";
+
+import React from "react";
 import { renderToReadableStream } from "react-dom/server";
 
-export async function jsx(vnode: React.ReactNode) {
-  return new Response(await renderToReadableStream(vnode), {
+export async function jsx(node: React.ReactNode) {
+  return new Response(await renderToReadableStream(node), {
     headers: { "content-type": "text/html; charset=utf-8" },
   });
 }
 
-export function redirect303(target: URL) {
+export function redirect303(target: URL | string) {
   return new Response(null, {
     status: 303,
     headers: { "location": target.toString() },
   });
+}
+
+export namespace Responses {
+  export const jsx = z.codec(
+    z.instanceof(Response),
+    z.custom<React.ReactNode>(),
+    {
+      decode: () => {
+        throw new Error("symmetry not supported");
+      },
+      encode: async (node) =>
+        new Response(await renderToReadableStream(node), {
+          headers: { "content-type": "text/html; charset=utf-8" },
+        }),
+    },
+  );
 }

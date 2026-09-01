@@ -1,13 +1,14 @@
 import z from "zod";
 
-import { BodyParsers } from "@/lib/web/body.ts";
+import { Body } from "@/lib/web/body.ts";
 import {
   FormRegistry,
   makePostSchema,
   SchemaBasedForm,
 } from "@/lib/web/forms.tsx";
-import { jsx, redirect303 } from "@/lib/web/respond.ts";
-import { route } from "@/lib/web/route.ts";
+import { Form, Link } from "@/lib/web/link.tsx";
+import { jsx, redirect303, Responses } from "@/lib/web/respond.ts";
+import { descriptor, route } from "@/lib/web/route.ts";
 
 import student from "@/app/data/student.ts";
 import { PageLayout } from "@/app/layouts/page.tsx";
@@ -35,11 +36,38 @@ const RegisterFormSchema = z.object({
   }),
 });
 
+export const descriptors = {
+  index: descriptor("GET", "/students/", {
+    response: Responses.jsx,
+  }),
+  register: {
+    get: descriptor("GET", "/students/register", {
+      response: Responses.jsx,
+    }),
+    post: descriptor("POST", "/students/register", {
+      body: Body.formData(makePostSchema(RegisterFormSchema)),
+    }),
+  },
+  manage: {
+    get: descriptor("GET", "/students/manage/:id", {
+      path: z.object({ id: z.uuid() }),
+    }),
+    post: descriptor("POST", "/students/manage/:id", {
+      path: z.object({ id: z.uuid() }),
+      body: Body.formData(makePostSchema(RegisterFormSchema)),
+    }),
+  },
+  delete: {
+    post: descriptor("POST", "/students/delete/:id", {
+      path: z.object({ id: z.uuid() }),
+      body: Body.formData(z.object({})),
+    }),
+  },
+};
+
 export const routes = [
   route(
-    "GET",
-    { pathname: "/students/" },
-    {},
+    descriptors.index,
     async () => {
       const items = await Array.fromAsync(
         student.list(),
@@ -49,9 +77,9 @@ export const routes = [
         a.status.localeCompare(b.status) || a.name.localeCompare(b.name)
       );
 
-      return jsx(
+      return (
         <PageLayout title="Students">
-          <a href="/students/register">Register New Student</a>
+          <Link to={descriptors.register.get}>Register New Student</Link>
           <table>
             <thead>
               <tr>
@@ -64,39 +92,32 @@ export const routes = [
                 <tr key={record.id}>
                   <td>{record.name}</td>
                   <td>
-                    <form method="GET" action={`/students/manage/${record.id}`}>
+                    <Form to={descriptors.manage.get} path={{ id: record.id }}>
                       <button type="submit">Manage</button>
-                    </form>
+                    </Form>
                   </td>
                 </tr>
               ))}
             </tbody>
           </table>
-        </PageLayout>,
+        </PageLayout>
       );
     },
   ),
   route(
-    "GET",
-    { pathname: "/students/register" },
-    {},
-    () =>
-      jsx(
-        <PageLayout title="Students">
-          <SchemaBasedForm
-            schema={RegisterFormSchema}
-            method="POST"
-            action="/students/register"
-          />
-        </PageLayout>,
-      ),
+    descriptors.register.get,
+    () => (
+      <PageLayout title="Students">
+        <SchemaBasedForm
+          schema={RegisterFormSchema}
+          method="POST"
+          action="/students/register"
+        />
+      </PageLayout>
+    ),
   ),
   route(
-    "POST",
-    { pathname: "/students/register" },
-    {
-      body: BodyParsers.formData(makePostSchema(RegisterFormSchema)),
-    },
+    descriptors.register.post,
     async (ctx, { body }) => {
       if (body.action === "save") {
         await student.create({
@@ -113,11 +134,7 @@ export const routes = [
     },
   ),
   route(
-    "GET",
-    { pathname: "/students/manage/:id" },
-    {
-      path: z.object({ id: z.uuid() }),
-    },
+    descriptors.manage.get,
     async (_ctx, { path }) => {
       const record = await student.get(path.id);
 
@@ -139,12 +156,7 @@ export const routes = [
     },
   ),
   route(
-    "POST",
-    { pathname: "/students/manage/:id" },
-    {
-      path: z.object({ id: z.uuid() }),
-      body: BodyParsers.formData(makePostSchema(RegisterFormSchema)),
-    },
+    descriptors.manage.post,
     async (ctx, { path, body }) => {
       if (body.action === "cancel") {
         return redirect303(new URL(`/students/`, ctx.url));
@@ -162,18 +174,11 @@ export const routes = [
         },
       );
 
-      return redirect303(new URL(`/students/manage/${path.id}`, ctx.url));
+      return redirect303(new URL(`/students/`, ctx.url));
     },
   ),
   route(
-    "POST",
-    { pathname: "/students/delete/:id" },
-    {
-      path: z.object({
-        id: z.uuid(),
-      }),
-      body: BodyParsers.formData(z.object({})),
-    },
+    descriptors.delete.post,
     async (ctx, { path }) => {
       await student.delete(path.id);
 

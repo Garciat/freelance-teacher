@@ -1,20 +1,30 @@
 import { jsx } from "@/lib/web/respond.ts";
-import { route } from "@/lib/web/route.ts";
+import { descriptor, formatRoute, route } from "@/lib/web/route.ts";
 
 import business from "@/app/data/business.ts";
 import { PageLayout } from "@/app/layouts/page.tsx";
 import { renderInvoiceToBlob } from "@/app/shared/invoice.tsx";
 
+export const descriptors = {
+  index: descriptor("GET", "/invoices/", {}),
+  example: descriptor("GET", "/invoices/example", {}),
+};
+
 export const routes = [
   route(
-    "GET",
-    { pathname: "/invoices/" },
-    {},
+    descriptors.index,
     () =>
       jsx(
         <PageLayout title="Invoices">
           <iframe
-            src="/invoices/example#toolbar=0&navpanes=0&zoom=page-fit"
+            src={formatRoute(
+              descriptors.example,
+              {
+                path: undefined,
+                query: undefined,
+                hash: { "toolbar": "0", "navpanes": "0", "zoom": "page-fit" },
+              },
+            )}
             style={{ aspectRatio: "210 / 297", width: "100%" }}
           >
           </iframe>
@@ -22,9 +32,7 @@ export const routes = [
       ),
   ),
   route(
-    "GET",
-    { pathname: "/invoices/example" },
-    {},
+    descriptors.example,
     async () =>
       new Response(
         await renderInvoiceToBlob({

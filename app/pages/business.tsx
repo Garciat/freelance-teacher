@@ -1,13 +1,13 @@
 import z from "zod";
 
-import { BodyParsers } from "@/lib/web/body.ts";
+import { Body } from "@/lib/web/body.ts";
 import {
   FormRegistry,
   makePostSchema,
   SchemaBasedForm,
 } from "@/lib/web/forms.tsx";
-import { jsx, redirect303 } from "@/lib/web/respond.ts";
-import { route } from "@/lib/web/route.ts";
+import { redirect303, Responses } from "@/lib/web/respond.ts";
+import { descriptor, formatRoute, route } from "@/lib/web/route.ts";
 
 import business from "@/app/data/business.ts";
 import { PageLayout } from "@/app/layouts/page.tsx";
@@ -43,15 +43,22 @@ const UpdateFormSchema = z.object({
   }),
 });
 
+export const descriptors = {
+  index: descriptor("GET", "/business/", {
+    response: Responses.jsx,
+  }),
+  save: descriptor("POST", "/business/", {
+    body: Body.formData(makePostSchema(UpdateFormSchema)),
+  }),
+};
+
 export const routes = [
   route(
-    "GET",
-    { pathname: "/business/" },
-    {},
+    descriptors.index,
     async () => {
       const record = await business.get();
 
-      return jsx(
+      return (
         <PageLayout title="Business">
           <SchemaBasedForm
             method="POST"
@@ -59,22 +66,18 @@ export const routes = [
             schema={UpdateFormSchema}
             value={record}
           />
-        </PageLayout>,
+        </PageLayout>
       );
     },
   ),
   route(
-    "POST",
-    { pathname: "/business/" },
-    {
-      body: BodyParsers.formData(makePostSchema(UpdateFormSchema)),
-    },
-    async (ctx, { body }) => {
+    descriptors.save,
+    async (_ctx, { body }) => {
       if (body.action === "save") {
         await business.set(body);
       }
 
-      return redirect303(new URL("/business/", ctx.url));
+      return redirect303(formatRoute(descriptors.index, {}));
     },
   ),
 ];

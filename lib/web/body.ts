@@ -12,3 +12,25 @@ export namespace BodyParsers {
       type.safeDecode(Object.fromEntries((await req.formData()).entries()));
   }
 }
+
+export namespace Body {
+  export function formData<T>(
+    type: z.ZodType<T, Record<string, string | File>>,
+  ) {
+    return z.codec(
+      z.instanceof(Request),
+      type,
+      {
+        decode: async (req) =>
+          Object.fromEntries((await req.formData()).entries()),
+        encode: (record) => {
+          const body = new FormData();
+          for (const [key, value] of Object.entries(record)) {
+            body.set(key, value);
+          }
+          return new Request("", { body });
+        },
+      },
+    );
+  }
+}
