@@ -8,7 +8,7 @@ import {
 } from "@/lib/web/forms.tsx";
 import { Form, Link } from "@/lib/web/link.tsx";
 import { jsx, redirect303, Responses } from "@/lib/web/respond.ts";
-import { descriptor, route } from "@/lib/web/route.ts";
+import { descriptor, formatRoute, route } from "@/lib/web/route.ts";
 
 import student from "@/app/data/student.ts";
 import { PageLayout } from "@/app/layouts/page.tsx";
@@ -108,17 +108,17 @@ export const routes = [
     descriptors.register.get,
     () => (
       <PageLayout title="Students">
-        <SchemaBasedForm
-          schema={RegisterFormSchema}
-          method="POST"
-          action="/students/register"
-        />
+        <Form to={descriptors.register.post}>
+          <SchemaBasedForm
+            schema={RegisterFormSchema}
+          />
+        </Form>
       </PageLayout>
     ),
   ),
   route(
     descriptors.register.post,
-    async (ctx, { body }) => {
+    async (_ctx, { body }) => {
       if (body.action === "save") {
         await student.create({
           name: body.name,
@@ -130,7 +130,7 @@ export const routes = [
         });
       }
 
-      return redirect303(new URL("/students/", ctx.url));
+      return redirect303(formatRoute(descriptors.index, {}));
     },
   ),
   route(
@@ -140,26 +140,26 @@ export const routes = [
 
       return jsx(
         <PageLayout title="Students">
-          <SchemaBasedForm
-            schema={RegisterFormSchema}
-            method="POST"
-            action={`/students/manage/${path.id}`}
-            value={{
-              name: record.name,
-              billing_name: record.billing.name,
-              billing_address: record.billing.address,
-              billing_location: record.billing.location,
-            }}
-          />
+          <Form to={descriptors.manage.post} path={{ id: path.id }}>
+            <SchemaBasedForm
+              schema={RegisterFormSchema}
+              value={{
+                name: record.name,
+                billing_name: record.billing.name,
+                billing_address: record.billing.address,
+                billing_location: record.billing.location,
+              }}
+            />
+          </Form>
         </PageLayout>,
       );
     },
   ),
   route(
     descriptors.manage.post,
-    async (ctx, { path, body }) => {
+    async (_ctx, { path, body }) => {
       if (body.action === "cancel") {
-        return redirect303(new URL(`/students/`, ctx.url));
+        return redirect303(formatRoute(descriptors.index, {}));
       }
 
       await student.update(
@@ -174,15 +174,15 @@ export const routes = [
         },
       );
 
-      return redirect303(new URL(`/students/`, ctx.url));
+      return redirect303(formatRoute(descriptors.index, {}));
     },
   ),
   route(
     descriptors.delete.post,
-    async (ctx, { path }) => {
+    async (_ctx, { path }) => {
       await student.delete(path.id);
 
-      return redirect303(new URL("/students/", ctx.url));
+      return redirect303(formatRoute(descriptors.index, {}));
     },
   ),
 ];

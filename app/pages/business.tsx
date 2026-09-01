@@ -11,6 +11,7 @@ import { descriptor, formatRoute, route } from "@/lib/web/route.ts";
 
 import business from "@/app/data/business.ts";
 import { PageLayout } from "@/app/layouts/page.tsx";
+import { Form } from "@/lib/web/link.tsx";
 
 const UpdateFormSchema = z.object({
   name: z.string().trim().nonempty().register(FormRegistry, {
@@ -60,12 +61,12 @@ export const routes = [
 
       return (
         <PageLayout title="Business">
-          <SchemaBasedForm
-            method="POST"
-            action="/business/"
-            schema={UpdateFormSchema}
-            value={record}
-          />
+          <Form to={descriptors.save}>
+            <SchemaBasedForm
+              schema={UpdateFormSchema}
+              value={record}
+            />
+          </Form>
         </PageLayout>
       );
     },

@@ -59,12 +59,11 @@ export function makePostSchema<T extends z.ZodRawShape>(
 type SchemaBasedFormProps<T extends z.ZodRawShape> = {
   schema: z.ZodObject<T>;
   value?: z.output<z.ZodObject<T>>;
-} & React.ComponentPropsWithoutRef<"form">;
+};
 
 export const SchemaBasedForm = <T extends z.ZodRawShape>({
   schema,
   value,
-  ...propsForm
 }: SchemaBasedFormProps<T>) => {
   const fields = generateFormConfig(schema);
 
@@ -74,42 +73,40 @@ export const SchemaBasedForm = <T extends z.ZodRawShape>({
 
   return (
     <div className="schema-form">
-      <form {...propsForm}>
-        {fields.map((field) => (
-          <div key={field.name} className="form-group">
-            <label htmlFor={field.name}>
-              {field.label}
-            </label>
+      {fields.map((field) => (
+        <div key={field.name} className="form-group">
+          <label htmlFor={field.name}>
+            {field.label}
+          </label>
 
-            {field.type === "textarea"
-              ? (
-                <textarea
-                  id={field.name}
-                  name={field.name}
-                  placeholder={field.placeholder}
-                  required={field.required}
-                />
-              )
-              : (
-                <input
-                  id={field.name}
-                  name={field.name}
-                  type={field.type}
-                  placeholder={field.placeholder}
-                  required={field.required}
-                  defaultChecked={field.type === "checkbox" ? false : undefined}
-                  value={record?.[field.name]}
-                />
-              )}
-          </div>
-        ))}
-        <footer className="actions">
-          <button type="submit" name="action" value="save">OK</button>
-          <button type="submit" name="action" value="cancel" formNoValidate>
-            Cancel
-          </button>
-        </footer>
-      </form>
+          {field.type === "textarea"
+            ? (
+              <textarea
+                id={field.name}
+                name={field.name}
+                placeholder={field.placeholder}
+                required={field.required}
+              />
+            )
+            : (
+              <input
+                id={field.name}
+                name={field.name}
+                type={field.type}
+                placeholder={field.placeholder}
+                required={field.required}
+                defaultChecked={field.type === "checkbox" ? false : undefined}
+                value={record?.[field.name]}
+              />
+            )}
+        </div>
+      ))}
+      <footer className="actions">
+        <button type="submit" name="action" value="save">OK</button>
+        <button type="submit" name="action" value="cancel" formNoValidate>
+          Cancel
+        </button>
+      </footer>
     </div>
   );
 };
