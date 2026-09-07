@@ -5,7 +5,7 @@ import * as esbuild from "esbuild";
 
 import { MaybeProp } from "@/lib/generic.ts";
 
-import { BaseHandler, ExtraParser, Handler } from "./types.ts";
+import { BaseHandler, Empty, ExtraParser, Handler } from "./types.ts";
 
 export type HttpMethod = "GET" | "POST" | "PUT" | "DELETE";
 
@@ -16,7 +16,7 @@ const PatternGroupSchema = z.record(
 
 type PatternGroup = z.output<typeof PatternGroupSchema>;
 
-export type RouteHandler = Handler<{}, Response | null>;
+export type RouteHandler = Handler<Empty, Response | null>;
 
 export type URLPatternMini = { pathname: string; search?: string };
 
@@ -227,15 +227,22 @@ export function route<
       );
     }
 
-    // TODO this extra is stuff is very ugly
-    const extraData = {} as Record<string, unknown>;
-
-    for (const [key, fn] of Object.entries(extra ?? {})) {
-      const value = await fn(ctx);
-      if (value instanceof Response) {
-        return value;
+    const extraData = await Promise.all(
+      Object.entries(extra ?? {})
+        .map(
+          async ([key, fn]) => ([key, await fn(ctx)] as [string, unknown]),
+        ),
+    ).then(
+      (entries) => Object.fromEntries(entries) as ExtraParams<Extra>,
+    ).catch((err) => {
+      if (err instanceof Response) {
+        return err;
       }
-      extraData[key] = value;
+      throw err;
+    });
+
+    if (extraData instanceof Response) {
+      return extraData;
     }
 
     const result = await delegate({
@@ -243,7 +250,7 @@ export function route<
       path: path.data,
       query: query.data,
       body: body.data,
-      ...(extraData as ExtraParams<Extra>),
+      ...extraData,
     });
 
     const response = await descriptor.types.response.safeEncodeAsync(result);

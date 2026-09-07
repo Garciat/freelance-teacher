@@ -20,13 +20,13 @@ export namespace Extras {
       return async (ctx) => {
         const auth = AuthSession.get(ctx);
         if (auth === null) {
-          return redirect303("/auth/login");
+          throw redirect303("/auth/login");
         }
         return await userFromAuth(auth);
       };
     }
 
-    async function userFromAuth(auth: AuthSessionData): Promise<UserSession> {
+    function userFromAuth(auth: AuthSessionData): UserSession {
       return {
         id: auth.email,
         email: auth.email,
