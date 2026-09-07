@@ -49,18 +49,19 @@ export const routes = [
             date: "29-08-2026",
             dueDate: "12-09-2026",
             paymentTerms: "14",
-            vatRate: 21, // Standard NL High VAT (Alternative: 9% or 0%)
           },
           items: [
             {
               description: "Frontend Development (React consulting)",
               qty: 40,
               price: 85.00,
+              vatPct: 21,
             },
             {
               description: "Cloud Infrastructure Setup & CI/CD pipeline",
               qty: 1,
               price: 1200.00,
+              vatPct: 0,
             },
           ],
         }),

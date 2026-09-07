@@ -36,8 +36,6 @@ export interface InvoiceMeta {
   dueDate: string;
   /** Payment term window in days (e.g., "14" or "30") */
   paymentTerms: string;
-  /** Dutch VAT percentage (typically 21, 9, or 0) */
-  vatRate: number;
 }
 
 export interface InvoiceItem {
@@ -45,6 +43,8 @@ export interface InvoiceItem {
   qty: number;
   /** Price per individual unit excluding VAT */
   price: number;
+  /** VAT % for this item type */
+  vatPct: number;
 }
 
 /**
@@ -125,8 +125,9 @@ const styles = StyleSheet.create({
   },
   colDescription: { width: "50%", textAlign: "left" },
   colQty: { width: "10%", textAlign: "center" },
-  colPrice: { width: "20%", textAlign: "right" },
-  colTotal: { width: "20%", textAlign: "right" },
+  colPrice: { width: "15%", textAlign: "right" },
+  colVat: { width: "10%", textAlign: "right" },
+  colTotal: { width: "15%", textAlign: "right" },
   totalsContainer: {
     flexDirection: "row",
     justifyContent: "flex-end",
@@ -178,11 +179,18 @@ export const DutchInvoice: React.FC<DutchInvoiceProps> = ({ data }) => {
   const { sender, client, invoiceMeta, items } = data;
 
   // Calculations
-  const subtotal = items.reduce(
-    (sum, item) => sum + (item.qty * item.price),
-    0,
-  );
-  const vatAmount = subtotal * (invoiceMeta.vatRate / 100);
+  const itemDerivedValues = items.map((item) => ({
+    value: item.qty * item.price,
+    get vat() {
+      return this.value * (item.vatPct / 100);
+    },
+    get total() {
+      return this.value + this.vat;
+    },
+  }));
+
+  const subtotal = sum(itemDerivedValues.map((v) => v.value));
+  const vatAmount = sum(itemDerivedValues.map((v) => v.vat));
   const total = subtotal + vatAmount;
 
   return (
@@ -229,6 +237,7 @@ export const DutchInvoice: React.FC<DutchInvoiceProps> = ({ data }) => {
             </Text>
             <Text style={[styles.colQty, styles.tableHeaderCell]}>Aantal</Text>
             <Text style={[styles.colPrice, styles.tableHeaderCell]}>Prijs</Text>
+            <Text style={[styles.colPrice, styles.tableHeaderCell]}>BTW</Text>
             <Text style={[styles.colTotal, styles.tableHeaderCell]}>
               Totaal
             </Text>
@@ -239,8 +248,9 @@ export const DutchInvoice: React.FC<DutchInvoiceProps> = ({ data }) => {
               <Text style={styles.colDescription}>{item.description}</Text>
               <Text style={styles.colQty}>{item.qty}</Text>
               <Text style={styles.colPrice}>€ {item.price.toFixed(2)}</Text>
+              <Text style={styles.colPrice}>{item.vatPct} %</Text>
               <Text style={styles.colTotal}>
-                € {(item.qty * item.price).toFixed(2)}
+                € {itemDerivedValues[index].total.toFixed(2)}
               </Text>
             </View>
           ))}
@@ -254,7 +264,7 @@ export const DutchInvoice: React.FC<DutchInvoiceProps> = ({ data }) => {
               <Text>€ {subtotal.toFixed(2)}</Text>
             </View>
             <View style={styles.totalsRow}>
-              <Text>BTW ({invoiceMeta.vatRate}%):</Text>
+              <Text>BTW:</Text>
               <Text>€ {vatAmount.toFixed(2)}</Text>
             </View>
             <View style={[styles.totalsRow, styles.grandTotalRow]}>
@@ -280,3 +290,11 @@ export const DutchInvoice: React.FC<DutchInvoiceProps> = ({ data }) => {
     </Document>
   );
 };
+
+function sum(values: Iterable<number>): number {
+  let x = 0;
+  for (const value of values) {
+    x += value;
+  }
+  return x;
+}
