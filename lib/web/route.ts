@@ -3,8 +3,9 @@ import { serveDir } from "@std/http";
 
 import * as esbuild from "esbuild";
 
-import { BaseHandler, Handler } from "./types.ts";
 import { MaybeProp } from "@/lib/generic.ts";
+
+import { BaseHandler, ExtraParser, Handler } from "./types.ts";
 
 export type HttpMethod = "GET" | "POST" | "PUT" | "DELETE";
 
@@ -173,6 +174,11 @@ function formatHash(
   }
 }
 
+type ExtraData<E> = {
+  [Key in keyof E]: E[Key] extends ExtraParser<infer W> ? W
+    : never;
+};
+
 export function route<
   M extends HttpMethod,
   N extends string,
@@ -180,9 +186,19 @@ export function route<
   Q,
   B,
   R,
+  Extra extends Record<string, ExtraParser>,
 >(
   descriptor: RouteDescriptor<M, N, P, Q, B, R>,
-  delegate: Handler<{ path: P; query: Q; body: B }, R>,
+  delegate: Handler<
+    {
+      path: P;
+      query: Q;
+      body: B;
+      extra: ExtraData<Extra>;
+    },
+    R
+  >,
+  extra?: Extra,
 ): RouteHandler {
   const pattern = new URLPattern({ pathname: descriptor.pathname });
 
@@ -213,10 +229,22 @@ export function route<
       );
     }
 
+    // TODO this extra is stuff is very ugly
+    const extraData = {} as Record<string, unknown>;
+
+    for (const [key, fn] of Object.entries(extra ?? {})) {
+      const value = await fn(ctx);
+      if (value instanceof Response) {
+        return value;
+      }
+      extraData[key] = value;
+    }
+
     const result = await delegate(ctx, {
       path: path.data,
       query: query.data,
       body: body.data,
+      extra: extraData as ExtraData<Extra>,
     });
 
     const response = await descriptor.types.response.safeEncodeAsync(result);

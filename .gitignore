@@ -1,3 +1,5 @@
 /_data/
 
 /deno.lock
+
+google.secret.json

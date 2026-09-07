@@ -6,12 +6,13 @@ import {
   makePostSchema,
   SchemaBasedForm,
 } from "@/lib/web/forms.tsx";
+import { Form } from "@/lib/web/link.tsx";
 import { redirect303, Responses } from "@/lib/web/respond.ts";
 import { descriptor, formatRoute, route } from "@/lib/web/route.ts";
 
 import business from "@/app/data/business.ts";
 import { PageLayout } from "@/app/layouts/page.tsx";
-import { Form } from "@/lib/web/link.tsx";
+import { Extras } from "@/app/pages/_extra.ts";
 
 const UpdateFormSchema = z.object({
   name: z.string().trim().nonempty().register(FormRegistry, {
@@ -56,11 +57,11 @@ export const descriptors = {
 export const routes = [
   route(
     descriptors.index,
-    async () => {
+    async (_ctx, { extra: { user } }) => {
       const record = await business.get();
 
       return (
-        <PageLayout title="Business">
+        <PageLayout title="Business" user={user}>
           <Form to={descriptors.save}>
             <SchemaBasedForm
               schema={UpdateFormSchema}
@@ -70,6 +71,7 @@ export const routes = [
         </PageLayout>
       );
     },
+    { user: Extras.User.required() },
   ),
   route(
     descriptors.save,
@@ -80,5 +82,6 @@ export const routes = [
 
       return redirect303(formatRoute(descriptors.index, {}));
     },
+    { user: Extras.User.required() },
   ),
 ];

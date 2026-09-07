@@ -23,7 +23,7 @@ export class CtxProps {
     return value;
   }
 
-  with<T>(key: CtxKey<T>, value: T): CtxProps {
+  with<T>(key: CtxKey<T>, value: NoInfer<T>): CtxProps {
     return new CtxProps(
       new Map([
         ...this.data.entries(),

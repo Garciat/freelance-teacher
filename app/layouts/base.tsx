@@ -1,4 +1,10 @@
-export type BaseLayoutProps = { title: string; children: React.ReactNode };
+import { UserSession } from "@/app/pages/_types.ts";
+
+export type BaseLayoutProps = {
+  title: string;
+  user?: UserSession | null;
+  children: React.ReactNode;
+};
 
 export const BaseLayout: React.FC<BaseLayoutProps> = (
   { title, children },

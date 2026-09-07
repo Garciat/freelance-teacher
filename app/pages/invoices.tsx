@@ -4,6 +4,7 @@ import { descriptor, formatRoute, route } from "@/lib/web/route.ts";
 import business from "@/app/data/business.ts";
 import { PageLayout } from "@/app/layouts/page.tsx";
 import { renderInvoiceToBlob } from "@/app/shared/invoice.tsx";
+import { Extras } from "@/app/pages/_extra.ts";
 
 export const descriptors = {
   index: descriptor("GET", "/invoices/", {}),
@@ -13,9 +14,9 @@ export const descriptors = {
 export const routes = [
   route(
     descriptors.index,
-    () =>
+    (_ctx, { extra: { user } }) =>
       jsx(
-        <PageLayout title="Invoices">
+        <PageLayout title="Invoices" user={user}>
           <iframe
             src={formatRoute(
               descriptors.example,
@@ -30,6 +31,7 @@ export const routes = [
           </iframe>
         </PageLayout>,
       ),
+    { user: Extras.User.required() },
   ),
   route(
     descriptors.example,
@@ -63,5 +65,6 @@ export const routes = [
           ],
         }),
       ),
+    { user: Extras.User.required() },
   ),
 ];

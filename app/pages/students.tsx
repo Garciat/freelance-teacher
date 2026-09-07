@@ -12,6 +12,7 @@ import { descriptor, formatRoute, route } from "@/lib/web/route.ts";
 
 import student from "@/app/data/student.ts";
 import { PageLayout } from "@/app/layouts/page.tsx";
+import { Extras } from "@/app/pages/_extra.ts";
 
 const RegisterFormSchema = z.object({
   name: z.string().trim().nonempty().register(FormRegistry, {
@@ -68,7 +69,7 @@ export const descriptors = {
 export const routes = [
   route(
     descriptors.index,
-    async () => {
+    async (_ctx, { extra: { user } }) => {
       const items = await Array.fromAsync(
         student.list(),
       );
@@ -78,7 +79,7 @@ export const routes = [
       );
 
       return (
-        <PageLayout title="Students">
+        <PageLayout title="Students" user={user}>
           <Link to={descriptors.register.get}>Register New Student</Link>
           <table>
             <thead>
@@ -103,11 +104,12 @@ export const routes = [
         </PageLayout>
       );
     },
+    { user: Extras.User.required() },
   ),
   route(
     descriptors.register.get,
-    () => (
-      <PageLayout title="Students">
+    (_ctx, { extra: { user } }) => (
+      <PageLayout title="Students" user={user}>
         <Form to={descriptors.register.post}>
           <SchemaBasedForm
             schema={RegisterFormSchema}
@@ -115,6 +117,7 @@ export const routes = [
         </Form>
       </PageLayout>
     ),
+    { user: Extras.User.required() },
   ),
   route(
     descriptors.register.post,
@@ -132,14 +135,15 @@ export const routes = [
 
       return redirect303(formatRoute(descriptors.index, {}));
     },
+    { user: Extras.User.required() },
   ),
   route(
     descriptors.manage.get,
-    async (_ctx, { path }) => {
+    async (_ctx, { path, extra: { user } }) => {
       const record = await student.get(path.id);
 
       return jsx(
-        <PageLayout title="Students">
+        <PageLayout title="Students" user={user}>
           <Form to={descriptors.manage.post} path={{ id: path.id }}>
             <SchemaBasedForm
               schema={RegisterFormSchema}
@@ -154,6 +158,7 @@ export const routes = [
         </PageLayout>,
       );
     },
+    { user: Extras.User.required() },
   ),
   route(
     descriptors.manage.post,
@@ -176,6 +181,7 @@ export const routes = [
 
       return redirect303(formatRoute(descriptors.index, {}));
     },
+    { user: Extras.User.required() },
   ),
   route(
     descriptors.delete.post,
@@ -184,5 +190,6 @@ export const routes = [
 
       return redirect303(formatRoute(descriptors.index, {}));
     },
+    { user: Extras.User.required() },
   ),
 ];
