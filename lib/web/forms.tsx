@@ -96,7 +96,7 @@ export const SchemaBasedForm = <T extends z.ZodRawShape>({
                 placeholder={field.placeholder}
                 required={field.required}
                 defaultChecked={field.type === "checkbox" ? false : undefined}
-                value={record?.[field.name]}
+                defaultValue={record?.[field.name]}
               />
             )}
         </div>
