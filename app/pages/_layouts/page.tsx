@@ -1,4 +1,4 @@
-import { BaseLayout, BaseLayoutProps } from "@/app/layouts/base.tsx";
+import { BaseLayout, BaseLayoutProps } from "@/app/pages/_layouts/base.tsx";
 import { UserSession } from "@/app/pages/_types.ts";
 
 export type PageLayoutProps = BaseLayoutProps;

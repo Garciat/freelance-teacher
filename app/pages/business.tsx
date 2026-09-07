@@ -11,7 +11,7 @@ import { redirect303, Responses } from "@/lib/web/respond.ts";
 import { descriptor, formatRoute, route } from "@/lib/web/route.ts";
 
 import business from "@/app/data/business.ts";
-import { PageLayout } from "@/app/layouts/page.tsx";
+import { PageLayout } from "@/app/pages/_layouts/page.tsx";
 import { Extras } from "@/app/pages/_extra.ts";
 
 const UpdateFormSchema = z.object({

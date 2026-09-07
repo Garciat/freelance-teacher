@@ -5,7 +5,7 @@ import { Body } from "@/lib/web/body.ts";
 import { redirect303, Responses } from "@/lib/web/respond.ts";
 import { descriptor, formatRoute, route } from "@/lib/web/route.ts";
 
-import { PageLayout } from "@/app/layouts/page.tsx";
+import { PageLayout } from "@/app/pages/_layouts/page.tsx";
 import { AuthSession } from "@/app/session.ts";
 
 const GoogleAuthClient = new OAuth2Client(
