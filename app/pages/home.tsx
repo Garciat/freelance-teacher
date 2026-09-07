@@ -13,7 +13,7 @@ export const routes = [
     descriptors.index,
     ({ user }) => (
       <PageLayout title="Home" user={user}>
-        <p>Welcome 🤗</p>
+        <p>Welcome, {user.email}</p>
       </PageLayout>
     ),
     { user: Extras.User.required() },
