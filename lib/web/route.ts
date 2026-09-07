@@ -194,8 +194,7 @@ export function route<
       path: P;
       query: Q;
       body: B;
-      extra: ExtraData<Extra>;
-    },
+    } & ExtraData<Extra>,
     R
   >,
   extra?: Extra,
@@ -244,7 +243,7 @@ export function route<
       path: path.data,
       query: query.data,
       body: body.data,
-      extra: extraData as ExtraData<Extra>,
+      ...(extraData as ExtraData<Extra>),
     });
 
     const response = await descriptor.types.response.safeEncodeAsync(result);

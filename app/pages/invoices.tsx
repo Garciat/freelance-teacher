@@ -14,7 +14,7 @@ export const descriptors = {
 export const routes = [
   route(
     descriptors.index,
-    (_ctx, { extra: { user } }) =>
+    (_ctx, { user }) =>
       jsx(
         <PageLayout title="Invoices" user={user}>
           <iframe
@@ -35,7 +35,7 @@ export const routes = [
   ),
   route(
     descriptors.example,
-    async (_ctx, { extra: { user } }) =>
+    async (_ctx, { user }) =>
       new Response(
         await renderInvoiceToBlob({
           sender: await business.get(user.id),
