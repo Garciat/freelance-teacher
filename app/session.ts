@@ -2,11 +2,15 @@ import z from "zod";
 
 import { SessionItem } from "@/lib/web/session.ts";
 
+const AuthSessionSchema = z.object({
+  email: z.string(),
+});
+
 export const AuthSession = new SessionItem({
   secret: new TextEncoder().encode("my happy secret"),
   cookieName: "auth",
   ttl: Temporal.Duration.from({ days: 7 }),
-  schema: z.object({
-    email: z.string(),
-  }),
+  schema: AuthSessionSchema,
 });
+
+export type AuthSessionData = z.output<typeof AuthSessionSchema>;

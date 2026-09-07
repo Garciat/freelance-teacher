@@ -1,6 +1,6 @@
 import z from "zod";
 
-import core from "@/app/data/core.ts";
+import core from "@/app/data/_core.ts";
 
 const StudentRecordSchema = z.object({
   id: z.uuid(),
@@ -35,9 +35,12 @@ export type UpdateRequest = {
 
 export default {
   async *list(
+    owner: string,
     options?: { includeInactive: boolean },
   ): AsyncGenerator<StudentRecord> {
-    for await (const entry of await core.list({ prefix: ["students"] })) {
+    for await (
+      const entry of await core.list({ prefix: studentKeyAll(owner) })
+    ) {
       const record = StudentRecordSchema.parse(entry.value);
 
       if (record.status === "inactive" && !options?.includeInactive) {
@@ -48,7 +51,10 @@ export default {
     }
   },
 
-  async create(req: CreateRequest) {
+  async create(
+    owner: string,
+    req: CreateRequest,
+  ) {
     const id = crypto.randomUUID();
 
     const record = StudentRecordSchema.encode({
@@ -57,33 +63,55 @@ export default {
       status: "active",
     });
 
-    await core.set(["students", id], record);
+    await core.set(studentKeyOne(owner, id), record);
   },
 
-  async get(id: string) {
-    const entry = await core.get(["students", id]);
+  async get(
+    owner: string,
+    id: string,
+  ) {
+    const entry = await core.get(studentKeyOne(owner, id));
     if (entry.versionstamp === null) {
       throw new Error("not found");
     }
     return StudentRecordSchema.parse(entry.value);
   },
 
-  async update(id: string, req: UpdateRequest) {
-    const entry = await core.get(["students", id]);
+  async update(
+    owner: string,
+    id: string,
+    req: UpdateRequest,
+  ) {
+    const entry = await core.get(studentKeyOne(owner, id));
     if (entry.versionstamp === null) {
       throw new Error("not found");
     }
 
     const record = { ...req, id, status: "active" } satisfies StudentRecord;
 
-    core.set(["students", id], StudentRecordSchema.encode(record));
+    core.set(studentKeyOne(owner, id), StudentRecordSchema.encode(record));
   },
 
-  async delete(id: string) {
-    const record = await this.get(id);
+  async delete(
+    owner: string,
+    id: string,
+  ) {
+    const record = await this.get(owner, id);
 
     const updated = { ...record, status: "inactive" } satisfies StudentRecord;
 
-    core.set(["students", id], StudentRecordSchema.encode(updated));
+    core.set(studentKeyOne(owner, id), StudentRecordSchema.encode(updated));
   },
 };
+
+function studentKeyOne(owner: string, id: string): Deno.KvKey {
+  return [...studentKeyBase(owner), id];
+}
+
+function studentKeyAll(owner: string): Deno.KvKey {
+  return studentKeyBase(owner);
+}
+
+function studentKeyBase(owner: string): Deno.KvKey {
+  return ["owner", owner, "students"];
+}

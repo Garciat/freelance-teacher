@@ -58,7 +58,7 @@ export const routes = [
   route(
     descriptors.index,
     async (_ctx, { extra: { user } }) => {
-      const record = await business.get();
+      const record = await business.get(user.id);
 
       return (
         <PageLayout title="Business" user={user}>
@@ -75,9 +75,9 @@ export const routes = [
   ),
   route(
     descriptors.save,
-    async (_ctx, { body }) => {
+    async (_ctx, { body, extra: { user } }) => {
       if (body.action === "save") {
-        await business.set(body);
+        await business.set(user.id, body);
       }
 
       return redirect303(formatRoute(descriptors.index, {}));

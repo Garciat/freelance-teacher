@@ -16,6 +16,6 @@ export const routes = [
         <p>Welcome 🤗</p>
       </PageLayout>
     ),
-    { user: Extras.User.optional() },
+    { user: Extras.User.required() },
   ),
 ];

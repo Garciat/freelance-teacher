@@ -1,6 +1,6 @@
 import z from "zod";
 
-import core from "@/app/data/core.ts";
+import core from "@/app/data/_core.ts";
 
 const BusinessRecordSchema = z.object({
   name: z.string(),
@@ -25,20 +25,24 @@ const fallback = {
 };
 
 export default {
-  async get() {
-    const entry = await core.get(["business"]);
+  async get(owner: string) {
+    const entry = await core.get(businessKey(owner));
 
     if (entry.versionstamp === null) {
-      await this.set(fallback);
+      await this.set(owner, fallback);
       return fallback;
     }
 
     return BusinessRecordSchema.parse(entry.value);
   },
 
-  async set(req: SetRequest) {
+  async set(owner: string, req: SetRequest) {
     const record = BusinessRecordSchema.encode(req);
 
-    await core.set(["business"], record);
+    await core.set(businessKey(owner), record);
   },
 };
+
+function businessKey(owner: string): Deno.KvKey {
+  return ["owner", owner, "business"];
+}

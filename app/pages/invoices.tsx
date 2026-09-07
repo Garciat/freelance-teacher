@@ -35,10 +35,10 @@ export const routes = [
   ),
   route(
     descriptors.example,
-    async () =>
+    async (_ctx, { extra: { user } }) =>
       new Response(
         await renderInvoiceToBlob({
-          sender: await business.get(),
+          sender: await business.get(user.id),
           client: {
             name: "Rotterdam Shipping Co.",
             address: "Coolsingel 65",

@@ -4,7 +4,7 @@ import { UserSession } from "@/app/pages/_types.ts";
 export type PageLayoutProps = BaseLayoutProps;
 
 const nav = [
-  { label: "Home", href: "/", kind: "all" as const },
+  { label: "Home", href: "/", kind: "user" as const },
   { label: "Business", href: "/business/", kind: "user" as const },
   { label: "Students", href: "/students/", kind: "user" as const },
   { label: "Invoices", href: "/invoices/", kind: "user" as const },

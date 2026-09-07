@@ -71,7 +71,7 @@ export const routes = [
     descriptors.index,
     async (_ctx, { extra: { user } }) => {
       const items = await Array.fromAsync(
-        student.list(),
+        student.list(user.id),
       );
 
       const displayItems = items.toSorted((a, b) =>
@@ -121,9 +121,9 @@ export const routes = [
   ),
   route(
     descriptors.register.post,
-    async (_ctx, { body }) => {
+    async (_ctx, { body, extra: { user } }) => {
       if (body.action === "save") {
-        await student.create({
+        await student.create(user.id, {
           name: body.name,
           billing: {
             name: body.billing_name,
@@ -140,7 +140,7 @@ export const routes = [
   route(
     descriptors.manage.get,
     async (_ctx, { path, extra: { user } }) => {
-      const record = await student.get(path.id);
+      const record = await student.get(user.id, path.id);
 
       return jsx(
         <PageLayout title="Students" user={user}>
@@ -162,12 +162,13 @@ export const routes = [
   ),
   route(
     descriptors.manage.post,
-    async (_ctx, { path, body }) => {
+    async (_ctx, { path, body, extra: { user } }) => {
       if (body.action === "cancel") {
         return redirect303(formatRoute(descriptors.index, {}));
       }
 
       await student.update(
+        user.id,
         path.id,
         {
           name: body.name,
@@ -185,8 +186,8 @@ export const routes = [
   ),
   route(
     descriptors.delete.post,
-    async (_ctx, { path }) => {
-      await student.delete(path.id);
+    async (_ctx, { path, extra: { user } }) => {
+      await student.delete(user.id, path.id);
 
       return redirect303(formatRoute(descriptors.index, {}));
     },

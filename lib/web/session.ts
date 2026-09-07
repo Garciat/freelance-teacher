@@ -86,8 +86,6 @@ export class SessionItem<T> {
       this.options.secret,
     ).catch(() => null);
 
-    console.log(result);
-
     if (result === null) {
       return null;
     }

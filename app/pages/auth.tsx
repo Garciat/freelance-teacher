@@ -8,6 +8,10 @@ import { descriptor, formatRoute, route } from "@/lib/web/route.ts";
 import { PageLayout } from "@/app/layouts/page.tsx";
 import { AuthSession } from "@/app/session.ts";
 
+const GoogleAuthClient = new OAuth2Client(
+  JSON.parse(await Deno.readTextFile(`${Deno.cwd()}/google.secret.json`)),
+);
+
 export const descriptors = {
   login: descriptor("GET", "/auth/login", { response: Responses.jsx }),
   logout: descriptor("GET", "/auth/logout", {}),
@@ -75,11 +79,7 @@ export const routes = [
   route(
     descriptors.google.callback,
     async (_ctx, { body }) => {
-      const client = new OAuth2Client(
-        JSON.parse(await Deno.readTextFile(`${Deno.cwd()}/google.secret.json`)),
-      );
-
-      const ticket = await client.verifyIdToken({
+      const ticket = await GoogleAuthClient.verifyIdToken({
         idToken: body.credential,
       });
 
