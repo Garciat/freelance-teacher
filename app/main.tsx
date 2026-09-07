@@ -12,6 +12,6 @@ Deno.serve(
   },
   async (req, info) => {
     const ctx = Ctx.from(req, info);
-    return await app(ctx, undefined);
+    return await app({ ctx });
   },
 );

@@ -16,7 +16,7 @@ const PatternGroupSchema = z.record(
 
 type PatternGroup = z.output<typeof PatternGroupSchema>;
 
-export type RouteHandler = Handler<undefined, Response | null>;
+export type RouteHandler = Handler<{}, Response | null>;
 
 export type URLPatternMini = { pathname: string; search?: string };
 
@@ -174,7 +174,13 @@ function formatHash(
   }
 }
 
-type ExtraData<E> = {
+type RouteParams<P, Q, B> = {
+  path: P;
+  query: Q;
+  body: B;
+};
+
+type ExtraParams<E> = {
   [Key in keyof E]: E[Key] extends ExtraParser<infer W> ? W
     : never;
 };
@@ -189,19 +195,12 @@ export function route<
   Extra extends Record<string, ExtraParser>,
 >(
   descriptor: RouteDescriptor<M, N, P, Q, B, R>,
-  delegate: Handler<
-    {
-      path: P;
-      query: Q;
-      body: B;
-    } & ExtraData<Extra>,
-    R
-  >,
+  delegate: Handler<RouteParams<P, Q, B> & ExtraParams<Extra>, R>,
   extra?: Extra,
 ): RouteHandler {
   const pattern = new URLPattern({ pathname: descriptor.pathname });
 
-  return async (ctx) => {
+  return async ({ ctx }) => {
     if (ctx.req.method !== descriptor.method) return null;
 
     const match = pattern.exec(ctx.url);
@@ -239,11 +238,12 @@ export function route<
       extraData[key] = value;
     }
 
-    const result = await delegate(ctx, {
+    const result = await delegate({
+      ctx,
       path: path.data,
       query: query.data,
       body: body.data,
-      ...(extraData as ExtraData<Extra>),
+      ...(extraData as ExtraParams<Extra>),
     });
 
     const response = await descriptor.types.response.safeEncodeAsync(result);
@@ -258,9 +258,11 @@ export function route<
 }
 
 export function routes(entries: RouteHandler[]): BaseHandler {
-  return async (ctx) => {
+  return async (input) => {
+    const { ctx } = input;
+
     for (const entry of entries) {
-      const res = await entry(ctx, undefined);
+      const res = await entry(input);
       if (res) return res;
     }
 
@@ -278,7 +280,7 @@ export function localFiles(
     ? fsRoot.slice("file://".length)
     : fsRoot;
 
-  return (ctx) => {
+  return ({ ctx }) => {
     if (ctx.url.pathname.startsWith(`/${urlRoot}`)) {
       return serveDir(ctx.req, { urlRoot, fsRoot: actualFsRoot, quiet: true });
     }
@@ -294,7 +296,7 @@ export function bundle(
     ? fsRoot.slice("file://".length)
     : fsRoot;
 
-  return async (ctx) => {
+  return async ({ ctx }) => {
     if (
       ctx.url.pathname.startsWith(urlRoot) &&
       (ctx.url.pathname.endsWith(".tsx") || ctx.url.pathname.endsWith(".ts"))

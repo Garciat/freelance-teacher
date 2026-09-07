@@ -3,7 +3,9 @@ import { trace } from "@opentelemetry/api";
 import { Decorator } from "./types.ts";
 
 export function logging(): Decorator {
-  return (delegate) => async (ctx, req) => {
+  return (delegate) => async (input) => {
+    const { ctx } = input;
+
     const span = trace.getActiveSpan();
 
     console.debug(
@@ -12,7 +14,7 @@ export function logging(): Decorator {
 
     const start = performance.now();
 
-    const res = await delegate(ctx, req);
+    const res = await delegate(input);
 
     const duration = performance.now() - start;
 

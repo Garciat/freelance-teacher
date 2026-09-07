@@ -11,7 +11,7 @@ export const descriptors = {
 export const routes = [
   route(
     descriptors.index,
-    (_ctx, { user }) => (
+    ({ user }) => (
       <PageLayout title="Home" user={user}>
         <p>Welcome 🤗</p>
       </PageLayout>

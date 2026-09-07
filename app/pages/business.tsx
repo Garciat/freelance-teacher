@@ -57,7 +57,7 @@ export const descriptors = {
 export const routes = [
   route(
     descriptors.index,
-    async (_ctx, { user }) => {
+    async ({ user }) => {
       const record = await business.get(user.id);
 
       return (
@@ -75,7 +75,7 @@ export const routes = [
   ),
   route(
     descriptors.save,
-    async (_ctx, { body, user }) => {
+    async ({ body, user }) => {
       if (body.action === "save") {
         await business.set(user.id, body);
       }

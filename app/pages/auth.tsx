@@ -28,7 +28,7 @@ export const descriptors = {
 export const routes = [
   route(
     descriptors.login,
-    (ctx) => (
+    ({ ctx }) => (
       <PageLayout title="Login">
         <script src="https://accounts.google.com/gsi/client" async></script>
 
@@ -78,7 +78,7 @@ export const routes = [
   // Google
   route(
     descriptors.google.callback,
-    async (_ctx, { body }) => {
+    async ({ body }) => {
       const ticket = await GoogleAuthClient.verifyIdToken({
         idToken: body.credential,
       });

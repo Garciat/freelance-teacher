@@ -69,7 +69,7 @@ export const descriptors = {
 export const routes = [
   route(
     descriptors.index,
-    async (_ctx, { user }) => {
+    async ({ user }) => {
       const items = await Array.fromAsync(
         student.list(user.id),
       );
@@ -108,7 +108,7 @@ export const routes = [
   ),
   route(
     descriptors.register.get,
-    (_ctx, { user }) => (
+    ({ user }) => (
       <PageLayout title="Students" user={user}>
         <Form to={descriptors.register.post}>
           <SchemaBasedForm
@@ -121,7 +121,7 @@ export const routes = [
   ),
   route(
     descriptors.register.post,
-    async (_ctx, { body, user }) => {
+    async ({ body, user }) => {
       if (body.action === "save") {
         await student.create(user.id, {
           name: body.name,
@@ -139,7 +139,7 @@ export const routes = [
   ),
   route(
     descriptors.manage.get,
-    async (_ctx, { path, user }) => {
+    async ({ path, user }) => {
       const record = await student.get(user.id, path.id);
 
       return jsx(
@@ -162,7 +162,7 @@ export const routes = [
   ),
   route(
     descriptors.manage.post,
-    async (_ctx, { path, body, user }) => {
+    async ({ path, body, user }) => {
       if (body.action === "cancel") {
         return redirect303(formatRoute(descriptors.index, {}));
       }
@@ -186,7 +186,7 @@ export const routes = [
   ),
   route(
     descriptors.delete.post,
-    async (_ctx, { path, user }) => {
+    async ({ path, user }) => {
       await student.delete(user.id, path.id);
 
       return redirect303(formatRoute(descriptors.index, {}));

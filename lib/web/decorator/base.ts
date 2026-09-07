@@ -9,7 +9,8 @@ export function decorators(entries: Decorator[]): Decorator {
 export function decoratorForCtx(
   mapper: (ctx: Ctx) => Ctx | Promise<Ctx>,
 ): Decorator {
-  return (delegate) => async (ctx, req) => delegate(await mapper(ctx), req);
+  return (delegate) => async (input) =>
+    delegate({ ...input, ctx: await mapper(input.ctx) });
 }
 
 export function decoratorForReq<T>(
