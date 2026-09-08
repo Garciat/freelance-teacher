@@ -1,4 +1,5 @@
-const kv = await Deno.openKv(`${Deno.cwd()}/_data/db.kv`);
+console.log(`DENO_KV_PATH=${Deno.env.get("DENO_KV_PATH")}`);
+const kv = await Deno.openKv(Deno.env.get("DENO_KV_PATH"));
 
 export default {
   async list(selector: Deno.KvListSelector, options?: Deno.KvListOptions) {
