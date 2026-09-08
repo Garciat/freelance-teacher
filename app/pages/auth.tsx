@@ -1,5 +1,5 @@
 import z from "zod";
-import { OAuth2Client } from "npm:google-auth-library@11.0.2";
+import { OAuth2Client } from "google-auth-library";
 
 import { Body } from "@/lib/web/body.ts";
 import { redirect303, Responses } from "@/lib/web/respond.ts";
@@ -8,9 +8,10 @@ import { descriptor, formatRoute, route } from "@/lib/web/route.ts";
 import { PageLayout } from "@/app/pages/_layouts/page.tsx";
 import { AuthSession } from "@/app/session.ts";
 
-const GoogleAuthClient = new OAuth2Client(
-  JSON.parse(await Deno.readTextFile(`${Deno.cwd()}/google.secret.json`)),
-);
+const GoogleAuthClient = new OAuth2Client({
+  client_id: Deno.env.get("GOOGLE_CLIENT_ID"),
+  client_secret: Deno.env.get("GOOGLE_CLIENT_SECRET"),
+});
 
 export const descriptors = {
   login: descriptor("GET", "/auth/login", { response: Responses.jsx }),

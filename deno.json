@@ -4,6 +4,7 @@
     "bigdecimal": "npm:@formatjs/bigdecimal@0.2.7",
     "dinero.js": "npm:dinero.js@2.0.2/bigint",
     "esbuild": "npm:esbuild",
+    "google-auth-library": "npm:google-auth-library@11.0.2",
     "react": "npm:react@^19",
     "react-dom": "npm:react-dom@^19",
     "@types/react": "npm:@types/react@^19",
@@ -13,7 +14,7 @@
     "@std/http": "jsr:@std/http@^1"
   },
   "tasks": {
-    "dev": "OTEL_DENO=true deno watch --allow-all --unstable-kv app/main.tsx"
+    "dev": "OTEL_DENO=true deno watch --allow-all --env-file --unstable-kv app/main.tsx"
   },
   "compilerOptions": {
     "jsx": "react-jsx",
