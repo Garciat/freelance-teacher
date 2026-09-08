@@ -32,20 +32,28 @@ export const PageLayout: React.FC<PageLayoutProps> = (
   <BaseLayout title={title}>
     <main>
       <header className="site-navigation">
-        <h1>Freelance Teacher</h1>
-        <nav>
-          <ul>
-            {nav.map((item) =>
-              isVisible(user, item.kind) && (
-                <li key={item.href}>
-                  <a href={item.href}>
-                    <span>{item.label}</span>
-                  </a>
-                </li>
-              )
-            )}
-          </ul>
-        </nav>
+        <div className="wrapper">
+          <h1>🧑‍🏫</h1>
+          <button
+            type="button"
+            className="menu-toggle"
+            popoverTarget="mobile-menu"
+          >
+          </button>
+          <nav id="mobile-menu" popover="">
+            <ul>
+              {nav.map((item) =>
+                isVisible(user, item.kind) && (
+                  <li key={item.href}>
+                    <a href={item.href}>
+                      <span>{item.label}</span>
+                    </a>
+                  </li>
+                )
+              )}
+            </ul>
+          </nav>
+        </div>
       </header>
       <div className="content">
         <h2>{title}</h2>
