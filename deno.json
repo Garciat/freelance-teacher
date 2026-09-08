@@ -1,6 +1,8 @@
 {
   "imports": {
     "@/": "./",
+    "bigdecimal": "npm:@formatjs/bigdecimal@0.2.7",
+    "dinero.js": "npm:dinero.js@2.0.2/bigint",
     "esbuild": "npm:esbuild",
     "react": "npm:react@^19",
     "react-dom": "npm:react-dom@^19",

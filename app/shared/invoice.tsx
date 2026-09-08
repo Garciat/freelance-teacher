@@ -31,11 +31,11 @@ export interface InvoiceMeta {
   /** Must follow a continuous, sequential numbering system */
   number: string;
   /** Format: DD-MM-YYYY or YYYY-MM-DD */
-  date: string;
+  date: Temporal.PlainDate;
   /** Format: DD-MM-YYYY or YYYY-MM-DD */
-  dueDate: string;
-  /** Payment term window in days (e.g., "14" or "30") */
-  paymentTerms: string;
+  dueDate: Temporal.PlainDate;
+  /** Payment term window in days (e.g., 14 or 30) */
+  paymentTerms: number;
 }
 
 export interface InvoiceItem {
@@ -206,8 +206,14 @@ export const DutchInvoice: React.FC<DutchInvoiceProps> = ({ data }) => {
           <View>
             <Text style={styles.invoiceTitle}>FACTUUR</Text>
             <Text>Factuurnummer: {invoiceMeta.number}</Text>
-            <Text>Datum: {invoiceMeta.date}</Text>
-            <Text>Vervaldatum: {invoiceMeta.dueDate}</Text>
+            <Text>
+              Datum:{" "}
+              {invoiceMeta.date.toLocaleString("nl", { dateStyle: "short" })}
+            </Text>
+            <Text>
+              Vervaldatum:{" "}
+              {invoiceMeta.dueDate.toLocaleString("nl", { dateStyle: "short" })}
+            </Text>
           </View>
         </View>
 

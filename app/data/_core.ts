@@ -1,8 +1,8 @@
 const kv = await Deno.openKv(`${Deno.cwd()}/_data/db.kv`);
 
 export default {
-  async list(selector: Deno.KvListSelector) {
-    return await kv.list(selector);
+  async list(selector: Deno.KvListSelector, options?: Deno.KvListOptions) {
+    return await kv.list(selector, options);
   },
 
   async get(key: Deno.KvKey) {
