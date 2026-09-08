@@ -52,6 +52,7 @@ export interface InvoiceItem {
  * required by the DutchInvoice component.
  */
 export interface DutchInvoiceData {
+  title: string;
   sender: InvoiceSender;
   client: InvoiceClient;
   invoiceMeta: InvoiceMeta;
@@ -176,7 +177,7 @@ export async function renderInvoiceToBlob(data: DutchInvoiceData) {
 }
 
 export const DutchInvoice: React.FC<DutchInvoiceProps> = ({ data }) => {
-  const { sender, client, invoiceMeta, items } = data;
+  const { title, sender, client, invoiceMeta, items } = data;
 
   // Calculations
   const itemDerivedValues = items.map((item) => ({
@@ -194,7 +195,7 @@ export const DutchInvoice: React.FC<DutchInvoiceProps> = ({ data }) => {
   const total = subtotal + vatAmount;
 
   return (
-    <Document>
+    <Document title={title}>
       <Page size="A4" style={styles.page}>
         {/* 1. Header Section */}
         <View style={styles.headerContainer}>

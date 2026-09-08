@@ -139,6 +139,7 @@ export const routes = [
 
       return new Response(
         await renderInvoiceToBlob({
+          title: `Invoice ${body.sequence_no}`,
           sender: await business.get(user.id),
           client: {
             name: stu.billing.name,
@@ -161,6 +162,12 @@ export const routes = [
             },
           ],
         }),
+        {
+          headers: {
+            "content-disposition":
+              `inline; filename="invoice-${body.sequence_no}.pdf"`,
+          },
+        },
       );
     },
     { user: Extras.User.required() },
