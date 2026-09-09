@@ -171,7 +171,16 @@ interface DutchInvoiceProps {
   data: DutchInvoiceData;
 }
 
-export async function renderInvoiceToBlob(data: DutchInvoiceData) {
+export async function renderInvoiceToBuffer(
+  data: DutchInvoiceData,
+): Promise<ArrayBuffer> {
+  const buffer = await renderToBuffer(<DutchInvoice data={data} />);
+  return new Uint8Array(buffer.buffer).slice().buffer;
+}
+
+export async function renderInvoiceToBlob(
+  data: DutchInvoiceData,
+): Promise<Blob> {
   const buffer = await renderToBuffer(<DutchInvoice data={data} />);
   return new Blob([new Uint8Array(buffer)], { type: "application/pdf" });
 }

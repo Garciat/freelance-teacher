@@ -1,15 +1,16 @@
 import z from "zod";
+import { dinero, EUR } from "dinero.js";
 
 import { BigDecimalCodec, IntegerCodec } from "@/lib/codecs.ts";
 import { Body } from "@/lib/web/body.ts";
-import { Form } from "@/lib/web/link.tsx";
-import { Responses } from "@/lib/web/respond.ts";
-import { descriptor, route } from "@/lib/web/route.ts";
+import { Form, Link } from "@/lib/web/link.tsx";
+import { redirect303, Responses } from "@/lib/web/respond.ts";
+import { descriptor, formatRoute, route } from "@/lib/web/route.ts";
 
 import { Business } from "@/app/data/business.ts";
 import { Invoice } from "@/app/data/invoice.ts";
 import { Student } from "@/app/data/student.ts";
-import { renderInvoiceToBlob } from "@/app/shared/invoice.tsx";
+import { renderInvoiceToBuffer } from "@/app/shared/invoice.tsx";
 
 import { Extras } from "@/app/pages/_extra.ts";
 import { PageLayout } from "@/app/pages/_layouts/page.tsx";
@@ -17,21 +18,78 @@ import { PageLayout } from "@/app/pages/_layouts/page.tsx";
 export const descriptors = {
   index: descriptor("GET", "/invoices/", { response: Responses.jsx }),
 
-  create: descriptor("POST", "/invoices/create", {
-    body: Body.formData(z.object({
-      sequence_no: IntegerCodec,
-      student_id: z.uuid(),
-      lesson_count: IntegerCodec,
-      hourly_rate: BigDecimalCodec,
-      vat_rate: z.enum(["0", "21"]),
-      deadline_days: IntegerCodec,
-    })),
+  create: {
+    get: descriptor("GET", "/invoices/create", { response: Responses.jsx }),
+
+    post: descriptor("POST", "/invoices/create", {
+      body: Body.formData(z.object({
+        sequence_no: IntegerCodec,
+        student_id: z.uuid(),
+        lesson_count: IntegerCodec,
+        hourly_rate: BigDecimalCodec,
+        vat_rate: z.enum(["0", "21"]),
+        deadline_days: IntegerCodec,
+      })),
+    }),
+  },
+
+  document: descriptor("GET", "/invoices/:id/document", {
+    path: z.object({ id: IntegerCodec }),
   }),
 };
 
 export const routes = [
   route(
     descriptors.index,
+    async ({ user }) => {
+      const invoices = await Array.fromAsync(Invoice.list(user.id));
+
+      const students = new Map(
+        await Array.fromAsync(
+          async function* () {
+            for await (const student of Student.list(user.id)) {
+              yield [student.id, student];
+            }
+          }(),
+        ),
+      );
+
+      return (
+        <PageLayout title="Invoices" user={user}>
+          <Link to={descriptors.create.get}>New Invoice</Link>
+          <table>
+            <thead>
+              <tr>
+                <th>Invoice No.</th>
+                <th>Student</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {invoices.map((invoice, index) => (
+                <tr key={index}>
+                  <td>{invoice.sequenceNumber}</td>
+                  <td>{students.get(invoice.recipient.studentId)?.name}</td>
+                  <td>
+                    <Form
+                      to={descriptors.document}
+                      path={{ id: Number(invoice.sequenceNumber) }}
+                    >
+                      <button type="submit">View</button>
+                    </Form>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </PageLayout>
+      );
+    },
+    { user: Extras.User.required() },
+  ),
+
+  route(
+    descriptors.create.get,
     async ({ user }) => {
       const [students, lastSeqNo] = await Promise.all([
         Array.fromAsync(Student.list(user.id)),
@@ -43,7 +101,7 @@ export const routes = [
 
       return (
         <PageLayout title="Invoices" user={user}>
-          <Form to={descriptors.create}>
+          <Form to={descriptors.create.post}>
             <div className="schema-form">
               <div className="form-group">
                 <label htmlFor="sequence_no">Sequence Number</label>
@@ -140,7 +198,7 @@ export const routes = [
   ),
 
   route(
-    descriptors.create,
+    descriptors.create.post,
     async ({ body, user }) => {
       const [business, student] = await Promise.all([
         Business.get(user.id),
@@ -149,39 +207,68 @@ export const routes = [
 
       const created = Temporal.Now.zonedDateTimeISO();
 
-      return new Response(
-        await renderInvoiceToBlob({
-          title: `Invoice ${body.sequence_no}`,
-          sender: business,
-          client: {
-            name: student.billing.name,
-            address: student.billing.address,
-            zipCity: student.billing.location,
-          },
-          invoiceMeta: {
-            number: body.sequence_no.toString(),
-            date: created.toPlainDate(),
-            dueDate: created
-              .add({ days: body.deadline_days })
-              .toPlainDate(),
-            paymentTerms: body.deadline_days,
-          },
-          items: [
-            {
-              description: `Lessen voor ${student.name}`,
-              qty: body.lesson_count,
-              price: body.hourly_rate.toNumber(),
-              vatPct: Number.parseInt(body.vat_rate),
-            },
-          ],
-        }),
-        {
-          headers: {
-            "content-disposition":
-              `inline; filename="invoice-${body.sequence_no}.pdf"`,
-          },
+      const deadline = created.add({ days: body.deadline_days });
+
+      const invoice = await renderInvoiceToBuffer({
+        title: `Invoice ${body.sequence_no}`,
+        sender: business,
+        client: {
+          name: student.billing.name,
+          address: student.billing.address,
+          zipCity: student.billing.location,
         },
-      );
+        invoiceMeta: {
+          number: body.sequence_no.toString(),
+          date: created.toPlainDate(),
+          dueDate: created
+            .add({ days: body.deadline_days })
+            .toPlainDate(),
+          paymentTerms: body.deadline_days,
+        },
+        items: [
+          {
+            description: `Lessen voor ${student.name}`,
+            qty: body.lesson_count,
+            price: body.hourly_rate.toNumber(),
+            vatPct: Number.parseInt(body.vat_rate),
+          },
+        ],
+      });
+
+      await Invoice.create(user.id, {
+        sequenceNumber: BigInt(body.sequence_no),
+        recipient: {
+          studentId: student.id,
+        },
+        amounts: {
+          vat: dinero({ amount: 0n, currency: EUR }),
+          preTaxTotal: dinero({ amount: 0n, currency: EUR }),
+        },
+        conditions: {
+          deadline: deadline.toInstant(),
+        },
+        document: {
+          invoice,
+        },
+      });
+
+      return redirect303(formatRoute(descriptors.index, {}));
+    },
+    { user: Extras.User.required() },
+  ),
+
+  route(
+    descriptors.document,
+    async ({ path, user }) => {
+      const invoice = await Invoice.get(user.id, BigInt(path.id));
+
+      return new Response(invoice.document.invoice, {
+        headers: {
+          "content-type": "application/pdf",
+          "content-disposition":
+            `inline; filename="invoice-${invoice.sequenceNumber}.pdf"`,
+        },
+      });
     },
     { user: Extras.User.required() },
   ),

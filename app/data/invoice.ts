@@ -60,6 +60,14 @@ export namespace Invoice {
     }
   }
 
+  export async function get(owner: string, id: bigint) {
+    const record = await core.get(recordKey(owner, id));
+    if (record.versionstamp === null) {
+      throw new Error("not found");
+    }
+    return InvoiceRecordSchema.parse(record.value);
+  }
+
   export async function maxSequenceNumber(owner: string) {
     for await (
       const entry of await core.list(
