@@ -3,7 +3,9 @@
 
   --background: light-dark(#FFF, #111);
   --color: light-dark(#000, #FFF);
-  --accent: #1a9fff;
+  --accent: var(--color-primary-400);
+  --color-primary-400: #1a9fff;
+  --color-primary-500: #07c;
 }
 
 html {
@@ -59,6 +61,20 @@ a {
   }
 
   &.navigate {
+    &::after {
+      display: inline-block;
+      content: '↗';
+      padding-left: .25em;
+    }
+  }
+
+  &.pill {
+    padding: .25em .75em;
+    background: color-mix(in oklab, var(--background), var(--color) 20%);
+    border-radius: 10px;
+    color: white;
+    font-size: 80%;
+
     &::after {
       display: inline-block;
       content: '↗';
@@ -349,6 +365,7 @@ button {
 
 .horizontal-stack {
   display: flex;
+  align-items: center;
   column-gap: 1em;
   flex-wrap: wrap;
 }
