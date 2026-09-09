@@ -14,6 +14,7 @@ import { renderInvoiceToBuffer } from "@/app/shared/invoice.tsx";
 
 import { Extras } from "@/app/pages/_extra.ts";
 import { PageLayout } from "@/app/pages/_layouts/page.tsx";
+import { makePostSchema } from "@/lib/web/forms.tsx";
 
 export const descriptors = {
   index: descriptor("GET", "/invoices/", { response: Responses.jsx }),
@@ -22,14 +23,14 @@ export const descriptors = {
     get: descriptor("GET", "/invoices/create", { response: Responses.jsx }),
 
     post: descriptor("POST", "/invoices/create", {
-      body: Body.formData(z.object({
+      body: Body.formData(makePostSchema(z.object({
         sequence_no: BigIntCodec,
         student_id: z.uuid(),
         lesson_count: IntegerCodec,
         hourly_rate: BigDecimalCodec,
         vat_rate: z.enum(["0", "21"]),
         deadline_days: IntegerCodec,
-      })),
+      }))),
     }),
   },
 
@@ -262,6 +263,10 @@ export const routes = [
   route(
     descriptors.create.post,
     async ({ body, user }) => {
+      if (body.action === "cancel") {
+        return redirect303(formatRoute(descriptors.index, {}));
+      }
+
       const [business, student] = await Promise.all([
         Business.get(user.id),
         Student.get(user.id, body.student_id),
