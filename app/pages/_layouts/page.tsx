@@ -39,6 +39,14 @@ export const PageLayout: React.FC<PageLayoutProps> = (
             className="menu-toggle"
             popoverTarget="mobile-menu"
           >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+              className="menu-icon"
+            >
+              <line x1="2" y1="12" x2="22" y2="12" className="line-top" />
+              <line x1="2" y1="12" x2="22" y2="12" className="line-bottom" />
+            </svg>
           </button>
           <nav id="mobile-menu" popover="">
             <ul>
