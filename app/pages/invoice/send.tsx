@@ -20,6 +20,9 @@ export const SENDER = "freelance-teacher@apps.garciat.com";
 export const makeSubject = (business: BusinessRecord) =>
   `Your invoice from ${business.name}`;
 
+export const makeRecipient = (student: StudentRecord) =>
+  `${student.billing.name} <${student.contact?.email}>`;
+
 export const InvoiceEmail = (
   { business, student }: { business: BusinessRecord; student: StudentRecord },
 ) => (
@@ -75,7 +78,7 @@ export const RouteInvoiceSend = {
             </div>
             <div className="item-property">
               <h4>To</h4>
-              <p>{student.contact?.email}</p>
+              <p>{makeRecipient(student)}</p>
             </div>
             <div className="item-property">
               <h4>Subject</h4>
@@ -130,15 +133,13 @@ export const RouteInvoiceSend = {
 
       const student = await Student.get(user.id, invoice.recipient.studentId);
 
-      const email = student.contact?.email;
-
-      if (!email) {
+      if (!student.contact?.email) {
         return new Response("no email", { status: 400 });
       }
 
       const result = await ResendClient.emails.send({
         from: SENDER,
-        to: email,
+        to: makeRecipient(student),
         subject: makeSubject(business),
         html: renderToString(
           <InvoiceEmail business={business} student={student} />,
