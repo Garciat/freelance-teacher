@@ -3,6 +3,7 @@ import z from "zod";
 export type UIFieldMeta = {
   label: string;
   type: "text" | "number" | "password" | "textarea" | "checkbox";
+  inputMode?: React.HTMLAttributes<"input">["inputMode"];
   placeholder?: string;
 };
 
@@ -27,10 +28,8 @@ function generateFormConfig<T>(
         fieldSchema instanceof z.ZodNullable);
 
       yield {
+        ...meta,
         name: fieldName as Extract<keyof T, string>,
-        label: meta.label,
-        type: meta.type,
-        placeholder: meta.placeholder,
         required: isRequired,
       };
     }
@@ -93,6 +92,7 @@ export const SchemaBasedForm = <T extends z.ZodRawShape>({
                 id={field.name}
                 name={field.name}
                 type={field.type}
+                inputMode={field.inputMode}
                 placeholder={field.placeholder}
                 required={field.required}
                 defaultChecked={field.type === "checkbox" ? false : undefined}

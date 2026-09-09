@@ -47,6 +47,7 @@ export const routes = [
                 <input
                   name="sequence_no"
                   type="number"
+                  inputMode="numeric"
                   step={1}
                   min={Number(lastSeqNo + 1n)}
                   defaultValue={Number(lastSeqNo + 1n)}
@@ -69,6 +70,7 @@ export const routes = [
                 <input
                   name="lesson_count"
                   type="number"
+                  inputMode="numeric"
                   step={1}
                   defaultValue={10}
                 />
@@ -86,6 +88,7 @@ export const routes = [
                   <input
                     name="hourly_rate"
                     type="number"
+                    inputMode="decimal"
                     step={0.01}
                     defaultValue={50}
                   />
@@ -103,6 +106,7 @@ export const routes = [
                 <input
                   name="deadline_days"
                   type="number"
+                  inputMode="numeric"
                   step={1}
                   defaultValue={7}
                 />

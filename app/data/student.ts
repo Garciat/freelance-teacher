@@ -11,6 +11,10 @@ const StudentRecordSchema = z.object({
     address: z.string().nonempty(),
     location: z.string().nonempty(),
   }),
+  contact: z.optional(z.object({
+    email: z.email(),
+    whatsapp: z.string(),
+  })),
 });
 
 type StudentRecord = z.output<typeof StudentRecordSchema>;
@@ -30,6 +34,10 @@ export type UpdateRequest = {
     name: string;
     address: string;
     location: string;
+  };
+  contact: {
+    email: string;
+    whatsapp: string;
   };
 };
 

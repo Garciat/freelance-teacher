@@ -35,6 +35,18 @@ const RegisterFormSchema = z.object({
     type: "text",
     placeholder: "1013BH Amsterdam",
   }),
+  contact_email: z.union([z.literal(""), z.email()]).register(FormRegistry, {
+    label: "Contact E-mail",
+    type: "text",
+    inputMode: "email",
+    placeholder: "hello@world.com",
+  }),
+  contact_whatsapp: z.string().trim().optional().register(FormRegistry, {
+    label: "Contact WhatsApp",
+    type: "text",
+    inputMode: "tel",
+    placeholder: "+31 612300789",
+  }),
 });
 
 export const descriptors = {
@@ -152,6 +164,8 @@ export const routes = [
                 billing_name: record.billing.name,
                 billing_address: record.billing.address,
                 billing_location: record.billing.location,
+                contact_email: record.contact?.email ?? "",
+                contact_whatsapp: record.contact?.whatsapp ?? "",
               }}
             />
           </Form>
@@ -176,6 +190,10 @@ export const routes = [
             name: body.billing_name,
             address: body.billing_address,
             location: body.billing_location,
+          },
+          contact: {
+            email: body.contact_email,
+            whatsapp: body.contact_whatsapp ?? "",
           },
         },
       );
