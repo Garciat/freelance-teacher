@@ -94,13 +94,15 @@ export const RouteInvoiceIndex = route(
                       {students.get(invoice.recipient.studentId)!.name}
                     </Link>
 
-                    <Link
-                      to={PagesInvoice.invoice.send.get}
-                      path={{ id: invoice.sequenceNumber }}
-                      className="pill"
-                    >
-                      Send Invoice
-                    </Link>
+                    {getState(invoice) === "pending" && (
+                      <Link
+                        to={PagesInvoice.invoice.send.get}
+                        path={{ id: invoice.sequenceNumber }}
+                        className="pill"
+                      >
+                        Send Invoice
+                      </Link>
+                    )}
                   </div>
                 </div>
                 <div className="horizontal-fill">
