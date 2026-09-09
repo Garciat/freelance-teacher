@@ -195,7 +195,7 @@ export function route<
   Extra extends Record<string, ExtraParser>,
 >(
   descriptor: RouteDescriptor<M, N, P, Q, B, R>,
-  delegate: Handler<RouteParams<P, Q, B> & ExtraParams<Extra>, R>,
+  delegate: Handler<RouteParams<P, Q, B> & ExtraParams<Extra>, NoInfer<R>>,
   extra?: Extra,
 ): RouteHandler {
   const pattern = new URLPattern({ pathname: descriptor.pathname });

@@ -1,3 +1,5 @@
+import { Buffer } from "node:buffer";
+
 import z from "zod";
 import { dinero, EUR } from "dinero.js";
 
@@ -15,6 +17,8 @@ import { renderInvoiceToBuffer } from "@/app/shared/invoice.tsx";
 import { Extras } from "@/app/pages/_extra.ts";
 import { PageLayout } from "@/app/pages/_layouts/page.tsx";
 import { makePostSchema } from "@/lib/web/forms.tsx";
+import { ResendClient } from "@/app/email.ts";
+import { renderToString } from "react-dom/server";
 
 export const descriptors = {
   index: descriptor("GET", "/invoices/", { response: Responses.jsx }),
@@ -42,6 +46,16 @@ export const descriptors = {
     markPaid: descriptor("POST", "/invoices/:id/paid", {
       path: z.object({ id: BigIntCodec }),
     }),
+
+    send: {
+      get: descriptor("GET", "/invoices/:id/send", {
+        path: z.object({ id: BigIntCodec }),
+        response: Responses.jsx,
+      }),
+      post: descriptor("POST", "/invoices/:id/send", {
+        path: z.object({ id: BigIntCodec }),
+      }),
+    },
 
     document: descriptor("GET", "/invoices/:id/document", {
       path: z.object({ id: BigIntCodec }),
@@ -126,6 +140,18 @@ export const routes = [
                         }}
                       >
                         <button type="submit">Finalize</button>
+                      </Form>
+
+                      <Form
+                        to={descriptors.invoice.send.get}
+                        path={{ id: invoice.sequenceNumber }}
+                        style={{
+                          display: getState(invoice) === "pending"
+                            ? "block"
+                            : "none",
+                        }}
+                      >
+                        <button type="submit">Send</button>
                       </Form>
 
                       <Form
@@ -354,6 +380,81 @@ export const routes = [
     descriptors.invoice.markPaid,
     async ({ path, user }) => {
       await Invoice.markPaid(user.id, path.id);
+
+      return redirect303(formatRoute(descriptors.index, {}));
+    },
+    { user: Extras.User.required() },
+  ),
+
+  route(
+    descriptors.invoice.send.get,
+    async ({ path, user }) => {
+      const invoice = await Invoice.get(user.id, path.id);
+
+      const student = await Student.get(user.id, invoice.recipient.studentId);
+
+      const email = student.contact?.email;
+
+      if (!email) {
+        return (
+          <PageLayout title="Invoices" user={user}>
+            <p>Student does not have an e-mail set up.</p>
+          </PageLayout>
+        );
+      }
+
+      return (
+        <PageLayout title="Invoices" user={user}>
+          <p>Send invoice to {student.contact?.email}?</p>
+          <Form to={descriptors.invoice.send.post} path={path}>
+            <button type="submit">Send</button>
+          </Form>
+        </PageLayout>
+      );
+    },
+    { user: Extras.User.required() },
+  ),
+
+  route(
+    descriptors.invoice.send.post,
+    async ({ path, user }) => {
+      const business = await Business.get(user.id);
+
+      const invoice = await Invoice.get(user.id, path.id);
+
+      const student = await Student.get(user.id, invoice.recipient.studentId);
+
+      const email = student.contact?.email;
+
+      if (!email) {
+        return new Response("no email", { status: 400 });
+      }
+
+      const result = await ResendClient.emails.send({
+        from: "freelance-teacher@apps.garciat.com",
+        to: email,
+        subject: `Your invoice from ${business.name}`,
+        html: renderToString(
+          <>
+            <p>Dear {student.billing.name},</p>
+            <p></p>
+            <p>This is your invoice.</p>
+            <p></p>
+            <p>Thank you,</p>
+            <p>{business.name}</p>
+          </>,
+        ),
+        attachments: [
+          {
+            content: Buffer.from(invoice.document.invoice),
+            filename: `invoice-${invoice.sequenceNumber}.pdf`,
+          },
+        ],
+      });
+
+      if (result.error) {
+        throw result.error;
+      }
 
       return redirect303(formatRoute(descriptors.index, {}));
     },
