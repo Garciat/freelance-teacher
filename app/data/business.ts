@@ -12,6 +12,8 @@ const BusinessRecordSchema = z.object({
   bic: z.string(),
 });
 
+export type BusinessRecord = z.output<typeof BusinessRecordSchema>;
+
 type SetRequest = z.output<typeof BusinessRecordSchema>;
 
 const fallback = {

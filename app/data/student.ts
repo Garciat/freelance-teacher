@@ -17,7 +17,7 @@ const StudentRecordSchema = z.object({
   })),
 });
 
-type StudentRecord = z.output<typeof StudentRecordSchema>;
+export type StudentRecord = z.output<typeof StudentRecordSchema>;
 
 export type CreateRequest = {
   name: string;

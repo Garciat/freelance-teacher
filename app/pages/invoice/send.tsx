@@ -1,23 +1,46 @@
 import { Buffer } from "node:buffer";
 
-import { Form } from "@/lib/web/link.tsx";
+import { Form, Link } from "@/lib/web/link.tsx";
 import { redirect303 } from "@/lib/web/respond.ts";
 import { formatRoute, route } from "@/lib/web/route.ts";
 
-import { Business } from "@/app/data/business.ts";
+import { Business, BusinessRecord } from "@/app/data/business.ts";
 import { Invoice } from "@/app/data/invoice.ts";
-import { Student } from "@/app/data/student.ts";
+import { Student, StudentRecord } from "@/app/data/student.ts";
 
 import { Extras } from "@/app/pages/_extra.ts";
 import { PageLayout } from "@/app/pages/_layouts/page.tsx";
 import { ResendClient } from "@/app/email.ts";
 import { renderToString } from "react-dom/server";
 import { PagesInvoice } from "@/app/pages/invoice/_meta.ts";
+import { PagesStudent } from "@/app/pages/student/_meta.ts";
+
+export const SENDER = "freelance-teacher@apps.garciat.com";
+
+export const makeSubject = (business: BusinessRecord) =>
+  `Your invoice from ${business.name}`;
+
+export const InvoiceEmail = (
+  { business, student }: { business: BusinessRecord; student: StudentRecord },
+) => (
+  <>
+    <p>Dear {student.billing.name},</p>
+    <p></p>
+    <p>This is your invoice.</p>
+    <p></p>
+    <p>
+      Thank you,<br />
+      {business.name}
+    </p>
+  </>
+);
 
 export const RouteInvoiceSend = {
   get: route(
     PagesInvoice.invoice.send.get,
     async ({ path, user }) => {
+      const business = await Business.get(user.id);
+
       const invoice = await Invoice.get(user.id, path.id);
 
       const student = await Student.get(user.id, invoice.recipient.studentId);
@@ -27,16 +50,66 @@ export const RouteInvoiceSend = {
       if (!email) {
         return (
           <PageLayout title="Invoices" user={user}>
-            <p>Student does not have an e-mail set up.</p>
+            <p>
+              Student{" "}
+              <Link
+                to={PagesStudent.manage.get}
+                path={{ id: student.id }}
+                className="navigate"
+              >
+                {student.name}
+              </Link>{" "}
+              does not have an e-mail set up.
+            </p>
           </PageLayout>
         );
       }
 
       return (
         <PageLayout title="Invoices" user={user}>
-          <p>Send invoice to {student.contact?.email}?</p>
+          <p>Please confirm the e-mail contents below.</p>
+          <section className="item-details email-preview">
+            <div className="item-property">
+              <h4>From</h4>
+              <p>{SENDER}</p>
+            </div>
+            <div className="item-property">
+              <h4>To</h4>
+              <p>{student.contact?.email}</p>
+            </div>
+            <div className="item-property">
+              <h4>Subject</h4>
+              <p>{makeSubject(business)}</p>
+            </div>
+            <div className="item-property">
+              <h4>Body</h4>
+              <blockquote>
+                <InvoiceEmail business={business} student={student} />
+              </blockquote>
+            </div>
+            <div className="item-property">
+              <h4>Attachment</h4>
+              <iframe
+                src={formatRoute(
+                  PagesInvoice.invoice.document,
+                  {
+                    path,
+                    hash: {
+                      "toolbar": "0",
+                      "navpanes": "0",
+                      "zoom": "page-fit",
+                    },
+                  },
+                )}
+              >
+              </iframe>
+            </div>
+          </section>
           <Form to={PagesInvoice.invoice.send.post} path={path}>
-            <button type="submit">Send</button>
+            <p className="horizontal-stack">
+              <button type="submit" name="action" value="save">Send</button>
+              <button type="submit" name="action" value="cancel">Cancel</button>
+            </p>
           </Form>
         </PageLayout>
       );
@@ -46,7 +119,11 @@ export const RouteInvoiceSend = {
 
   post: route(
     PagesInvoice.invoice.send.post,
-    async ({ path, user }) => {
+    async ({ path, body, user }) => {
+      if (body.action === "cancel") {
+        return redirect303(formatRoute(PagesInvoice.index, {}));
+      }
+
       const business = await Business.get(user.id);
 
       const invoice = await Invoice.get(user.id, path.id);
@@ -60,18 +137,11 @@ export const RouteInvoiceSend = {
       }
 
       const result = await ResendClient.emails.send({
-        from: "freelance-teacher@apps.garciat.com",
+        from: SENDER,
         to: email,
-        subject: `Your invoice from ${business.name}`,
+        subject: makeSubject(business),
         html: renderToString(
-          <>
-            <p>Dear {student.billing.name},</p>
-            <p></p>
-            <p>This is your invoice.</p>
-            <p></p>
-            <p>Thank you,</p>
-            <p>{business.name}</p>
-          </>,
+          <InvoiceEmail business={business} student={student} />,
         ),
         attachments: [
           {

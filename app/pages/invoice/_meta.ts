@@ -40,6 +40,7 @@ export const PagesInvoice = {
       }),
       post: descriptor("POST", "/invoices/:id/send", {
         path: z.object({ id: BigIntCodec }),
+        body: Body.formData(makePostSchema(z.object({}))),
       }),
     },
 

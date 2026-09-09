@@ -67,10 +67,6 @@ a {
   }
 }
 
-iframe {
-  border: 0;
-}
-
 .text-center {
   text-align: center;
 }
@@ -316,10 +312,43 @@ button {
   }
 }
 
+.email-preview {
+  blockquote {
+    margin: 0;
+    padding: 1em;
+    display: flex;
+    flex-direction: column;
+    row-gap: .5em;
+    border-radius: 5px;
+    background:
+      color-mix(in oklab, var(--background), var(--color) 10%);
+
+    > * {
+      margin: 0;
+    }
+  }
+
+  iframe {
+    width: 100%;
+    /* A4 paper ratio */
+    aspect-ratio: 70 / 99;
+    border: 1px solid
+      color-mix(in oklab, var(--background), var(--color) 30%);
+  }
+}
+
+/* Reusable */
+
 .horizontal-fill {
   display: flex;
 
   > * {
     flex-grow: 1;
   }
+}
+
+.horizontal-stack {
+  display: flex;
+  column-gap: 1em;
+  flex-wrap: wrap;
 }
