@@ -32,6 +32,17 @@ export const RouteInvoiceIndex = route(
   async ({ user }) => {
     const invoices = await Array.fromAsync(Invoice.list(user.id));
 
+    const invoicesByMonth = Map.groupBy(
+      invoices,
+      (invoice) =>
+        invoice.events.created.timestamp
+          .toZonedDateTimeISO("Europe/Amsterdam")
+          .withCalendar("gregory")
+          .toPlainDate()
+          .toPlainYearMonth()
+          .toString(),
+    );
+
     const students = new Map(
       await Array.fromAsync(
         async function* () {
@@ -49,85 +60,101 @@ export const RouteInvoiceIndex = route(
     return (
       <PageLayout title="Invoices" user={user}>
         <Link to={PagesInvoice.create.get}>New Invoice</Link>
-        {invoices.map((invoice, index) => (
-          <article key={index} className="item-details">
-            <div className="item-property">
-              <h4>Invoice No.</h4>
-              <p>{invoice.sequenceNumber}</p>
-            </div>
-            <div className="item-property">
-              <h4>Student</h4>
-              <p>
-                <Link
-                  to={PagesStudent.manage.get}
-                  path={{ id: students.get(invoice.recipient.studentId)!.id }}
-                  className="navigate"
-                >
-                  {students.get(invoice.recipient.studentId)!.name}
-                </Link>
-              </p>
-            </div>
-            <div className="horizontal-fill">
-              <div className="item-property">
-                <h4>Created</h4>
-                <p>{formatEventDate(invoice.events.created.timestamp)}</p>
-              </div>
-              {invoice.events.finalized && (
+        {invoicesByMonth.entries().map(([yearMonthStr, invoices]) => (
+          <section>
+            <h2>
+              {Temporal.PlainYearMonth.from(yearMonthStr)
+                .toLocaleString("en", { dateStyle: "long" })}
+            </h2>
+            {invoices.map((invoice, index) => (
+              <article key={index} className="item-details">
                 <div className="item-property">
-                  <h4>Finalized</h4>
-                  <p>{formatEventDate(invoice.events.finalized.timestamp)}</p>
+                  <h4>Invoice No.</h4>
+                  <p>{invoice.sequenceNumber}</p>
                 </div>
-              )}
-              {invoice.events.paid && (
                 <div className="item-property">
-                  <h4>Paid</h4>
-                  <p>{formatEventDate(invoice.events.paid.timestamp)}</p>
+                  <h4>Student</h4>
+                  <p>
+                    <Link
+                      to={PagesStudent.manage.get}
+                      path={{
+                        id: students.get(invoice.recipient.studentId)!.id,
+                      }}
+                      className="navigate"
+                    >
+                      {students.get(invoice.recipient.studentId)!.name}
+                    </Link>
+                  </p>
                 </div>
-              )}
-            </div>
-            <div className="item-property">
-              <h4>Status</h4>
-              <p>{stateLabels[getState(invoice)]}</p>
-            </div>
-            <div className="actions">
-              <Form
-                to={PagesInvoice.invoice.document}
-                path={{ id: invoice.sequenceNumber }}
-              >
-                <button type="submit">View Document</button>
-              </Form>
+                <div className="horizontal-fill">
+                  <div className="item-property">
+                    <h4>Created</h4>
+                    <p>{formatEventDate(invoice.events.created.timestamp)}</p>
+                  </div>
+                  {invoice.events.finalized && (
+                    <div className="item-property">
+                      <h4>Finalized</h4>
+                      <p>
+                        {formatEventDate(invoice.events.finalized.timestamp)}
+                      </p>
+                    </div>
+                  )}
+                  {invoice.events.paid && (
+                    <div className="item-property">
+                      <h4>Paid</h4>
+                      <p>{formatEventDate(invoice.events.paid.timestamp)}</p>
+                    </div>
+                  )}
+                </div>
+                <div className="item-property">
+                  <h4>Status</h4>
+                  <p>{stateLabels[getState(invoice)]}</p>
+                </div>
+                <div className="actions">
+                  <Form
+                    to={PagesInvoice.invoice.document}
+                    path={{ id: invoice.sequenceNumber }}
+                  >
+                    <button type="submit">View Document</button>
+                  </Form>
 
-              <Form
-                to={PagesInvoice.invoice.markFinalized}
-                path={{ id: invoice.sequenceNumber }}
-                style={{
-                  display: getState(invoice) === "draft" ? "block" : "none",
-                }}
-              >
-                <button type="submit">Finalize</button>
-              </Form>
+                  <Form
+                    to={PagesInvoice.invoice.markFinalized}
+                    path={{ id: invoice.sequenceNumber }}
+                    style={{
+                      display: getState(invoice) === "draft" ? "block" : "none",
+                    }}
+                  >
+                    <button type="submit">Finalize</button>
+                  </Form>
 
-              <Form
-                to={PagesInvoice.invoice.send.get}
-                path={{ id: invoice.sequenceNumber }}
-                style={{
-                  display: getState(invoice) === "pending" ? "block" : "none",
-                }}
-              >
-                <button type="submit">Send</button>
-              </Form>
+                  <Form
+                    to={PagesInvoice.invoice.send.get}
+                    path={{ id: invoice.sequenceNumber }}
+                    style={{
+                      display: getState(invoice) === "pending"
+                        ? "block"
+                        : "none",
+                    }}
+                  >
+                    <button type="submit">Send</button>
+                  </Form>
 
-              <Form
-                to={PagesInvoice.invoice.markPaid}
-                path={{ id: invoice.sequenceNumber }}
-                style={{
-                  display: getState(invoice) === "pending" ? "block" : "none",
-                }}
-              >
-                <button type="submit">Paid</button>
-              </Form>
-            </div>
-          </article>
+                  <Form
+                    to={PagesInvoice.invoice.markPaid}
+                    path={{ id: invoice.sequenceNumber }}
+                    style={{
+                      display: getState(invoice) === "pending"
+                        ? "block"
+                        : "none",
+                    }}
+                  >
+                    <button type="submit">Paid</button>
+                  </Form>
+                </div>
+              </article>
+            ))}
+          </section>
         ))}
       </PageLayout>
     );
