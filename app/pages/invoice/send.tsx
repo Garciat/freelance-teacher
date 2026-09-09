@@ -81,6 +81,10 @@ export const RouteInvoiceSend = {
               <p>{makeRecipient(student)}</p>
             </div>
             <div className="item-property">
+              <h4>BCC</h4>
+              <p>{user.email}</p>
+            </div>
+            <div className="item-property">
               <h4>Subject</h4>
               <p>{makeSubject(business)}</p>
             </div>
@@ -140,6 +144,7 @@ export const RouteInvoiceSend = {
       const result = await ResendClient.emails.send({
         from: SENDER,
         to: makeRecipient(student),
+        bcc: [user.email],
         subject: makeSubject(business),
         html: renderToString(
           <InvoiceEmail business={business} student={student} />,
