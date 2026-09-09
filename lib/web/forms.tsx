@@ -50,8 +50,8 @@ export function makePostSchema<T extends z.ZodRawShape>(
   schema: z.ZodObject<T>,
 ) {
   return z.discriminatedUnion("action", [
-    z.object({ action: z.literal("cancel") }),
-    schema.extend({ action: z.literal("save") }),
+    z.object({ action: z.literal("cancel"), _referrer: z.url().optional() }),
+    schema.extend({ action: z.literal("save"), _referrer: z.url().optional() }),
   ]);
 }
 

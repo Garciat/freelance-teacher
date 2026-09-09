@@ -83,12 +83,13 @@ export const routes = [
   ),
   route(
     PagesStudent.manage.get,
-    async ({ path, user }) => {
+    async ({ ctx, path, user }) => {
       const record = await Student.get(user.id, path.id);
 
       return jsx(
         <PageLayout title="Students" user={user}>
           <Form to={PagesStudent.manage.post} path={{ id: path.id }}>
+            <input type="hidden" name="_referrer" value={ctx.referrer} />
             <SchemaBasedForm
               schema={RegisterFormSchema}
               value={{
@@ -110,7 +111,9 @@ export const routes = [
     PagesStudent.manage.post,
     async ({ path, body, user }) => {
       if (body.action === "cancel") {
-        return redirect303(formatRoute(PagesStudent.index, {}));
+        return redirect303(
+          body._referrer ?? formatRoute(PagesStudent.index, {}),
+        );
       }
 
       await Student.update(
@@ -130,7 +133,7 @@ export const routes = [
         },
       );
 
-      return redirect303(formatRoute(PagesStudent.index, {}));
+      return redirect303(body._referrer ?? formatRoute(PagesStudent.index, {}));
     },
     { user: Extras.User.required() },
   ),

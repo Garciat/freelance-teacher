@@ -42,6 +42,7 @@ export class Ctx {
     public readonly req: Request,
     public readonly info: Deno.ServeHandlerInfo,
     public readonly url: URL,
+    public readonly referrer: string | undefined,
     public readonly props: CtxProps,
   ) {}
 
@@ -50,6 +51,7 @@ export class Ctx {
       req,
       info,
       new URL(req.url),
+      req.headers.get("referer") ?? undefined,
       CtxProps.empty(),
     );
   }
@@ -59,6 +61,7 @@ export class Ctx {
       this.req,
       this.info,
       this.url,
+      this.referrer,
       mapper(this.props),
     );
   }
