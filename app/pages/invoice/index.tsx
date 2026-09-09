@@ -52,11 +52,11 @@ export const RouteInvoiceIndex = route(
         {invoices.map((invoice, index) => (
           <article key={index} className="item-details">
             <div className="item-property">
-              <h3>Invoice No.</h3>
+              <h4>Invoice No.</h4>
               <p>{invoice.sequenceNumber}</p>
             </div>
             <div className="item-property">
-              <h3>Student</h3>
+              <h4>Student</h4>
               <p>
                 <Link
                   to={PagesStudent.manage.get}
@@ -69,24 +69,24 @@ export const RouteInvoiceIndex = route(
             </div>
             <div className="horizontal-fill">
               <div className="item-property">
-                <h3>Created</h3>
+                <h4>Created</h4>
                 <p>{formatEventDate(invoice.events.created.timestamp)}</p>
               </div>
               {invoice.events.finalized && (
                 <div className="item-property">
-                  <h3>Finalized</h3>
+                  <h4>Finalized</h4>
                   <p>{formatEventDate(invoice.events.finalized.timestamp)}</p>
                 </div>
               )}
               {invoice.events.paid && (
                 <div className="item-property">
-                  <h3>Paid</h3>
+                  <h4>Paid</h4>
                   <p>{formatEventDate(invoice.events.paid.timestamp)}</p>
                 </div>
               )}
             </div>
             <div className="item-property">
-              <h3>Status</h3>
+              <h4>Status</h4>
               <p>{stateLabels[getState(invoice)]}</p>
             </div>
             <div className="actions">

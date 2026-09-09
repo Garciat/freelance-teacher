@@ -297,7 +297,7 @@ button {
     flex-direction: column;
     row-gap: .25em;
 
-    > h3 {
+    > h4 {
       margin: 0;
       text-transform: uppercase;
       font-size: .8em;
