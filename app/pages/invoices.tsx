@@ -137,6 +137,8 @@ export const routes = [
     async ({ body, user }) => {
       const stu = await student.get(user.id, body.student_id);
 
+      const created = Temporal.Now.zonedDateTimeISO();
+
       return new Response(
         await renderInvoiceToBlob({
           title: `Invoice ${body.sequence_no}`,
@@ -148,9 +150,10 @@ export const routes = [
           },
           invoiceMeta: {
             number: body.sequence_no.toString(),
-            date: Temporal.Now.plainDateISO(),
-            dueDate: Temporal.Now.plainDateISO()
-              .add({ days: body.deadline_days }),
+            date: created.toPlainDate(),
+            dueDate: created
+              .add({ days: body.deadline_days })
+              .toPlainDate(),
             paymentTerms: body.deadline_days,
           },
           items: [
