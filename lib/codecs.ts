@@ -11,6 +11,15 @@ export const IntegerCodec = z.codec(
   },
 );
 
+export const BigIntCodec = z.codec(
+  z.string().regex(z.regexes.integer),
+  z.bigint(),
+  {
+    decode: (value) => BigInt(value),
+    encode: (value) => value.toString(),
+  },
+);
+
 export const BigDecimalCodec = z.codec(
   z.string().regex(/^\d+(\.\d{1,2})?$/),
   z.instanceof(BigDecimal),

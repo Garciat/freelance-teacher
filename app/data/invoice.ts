@@ -33,6 +33,8 @@ const InvoiceRecordSchema = z.object({
   }),
 });
 
+export type InvoiceRecord = z.output<typeof InvoiceRecordSchema>;
+
 export type CreateRequest = {
   sequenceNumber: bigint;
   recipient: {
@@ -53,7 +55,10 @@ export type CreateRequest = {
 export namespace Invoice {
   export async function* list(owner: string) {
     for await (
-      const entry of await core.list({ prefix: collectionKey(owner) })
+      const entry of await core.list(
+        { prefix: collectionKey(owner) },
+        { reverse: true },
+      )
     ) {
       const record = InvoiceRecordSchema.parse(entry.value);
       yield record;
@@ -93,6 +98,50 @@ export namespace Invoice {
     });
 
     await core.set(recordKey(owner, req.sequenceNumber), record);
+  }
+
+  export async function markFinalized(owner: string, id: bigint) {
+    const invoice = await get(owner, id);
+
+    if (invoice.events.finalized) {
+      throw new Error("already finalized");
+    }
+
+    const updated = {
+      ...invoice,
+      events: {
+        ...invoice.events,
+        finalized: {
+          timestamp: Temporal.Now.instant(),
+        },
+      },
+    } satisfies InvoiceRecord;
+
+    await core.set(recordKey(owner, id), InvoiceRecordSchema.encode(updated));
+  }
+
+  export async function markPaid(owner: string, id: bigint) {
+    const invoice = await get(owner, id);
+
+    if (!invoice.events.finalized) {
+      throw new Error("not finalized");
+    }
+
+    if (invoice.events.paid) {
+      throw new Error("already paid");
+    }
+
+    const updated = {
+      ...invoice,
+      events: {
+        ...invoice.events,
+        paid: {
+          timestamp: Temporal.Now.instant(),
+        },
+      },
+    } satisfies InvoiceRecord;
+
+    await core.set(recordKey(owner, id), InvoiceRecordSchema.encode(updated));
   }
 }
 

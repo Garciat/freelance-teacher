@@ -1,14 +1,14 @@
 import z from "zod";
 import { dinero, EUR } from "dinero.js";
 
-import { BigDecimalCodec, IntegerCodec } from "@/lib/codecs.ts";
+import { BigDecimalCodec, BigIntCodec, IntegerCodec } from "@/lib/codecs.ts";
 import { Body } from "@/lib/web/body.ts";
 import { Form, Link } from "@/lib/web/link.tsx";
 import { redirect303, Responses } from "@/lib/web/respond.ts";
 import { descriptor, formatRoute, route } from "@/lib/web/route.ts";
 
 import { Business } from "@/app/data/business.ts";
-import { Invoice } from "@/app/data/invoice.ts";
+import { Invoice, InvoiceRecord } from "@/app/data/invoice.ts";
 import { Student } from "@/app/data/student.ts";
 import { renderInvoiceToBuffer } from "@/app/shared/invoice.tsx";
 
@@ -23,7 +23,7 @@ export const descriptors = {
 
     post: descriptor("POST", "/invoices/create", {
       body: Body.formData(z.object({
-        sequence_no: IntegerCodec,
+        sequence_no: BigIntCodec,
         student_id: z.uuid(),
         lesson_count: IntegerCodec,
         hourly_rate: BigDecimalCodec,
@@ -33,10 +33,38 @@ export const descriptors = {
     }),
   },
 
-  document: descriptor("GET", "/invoices/:id/document", {
-    path: z.object({ id: IntegerCodec }),
-  }),
+  invoice: {
+    markFinalized: descriptor("POST", "/invoices/:id/finalize", {
+      path: z.object({ id: BigIntCodec }),
+    }),
+
+    markPaid: descriptor("POST", "/invoices/:id/paid", {
+      path: z.object({ id: BigIntCodec }),
+    }),
+
+    document: descriptor("GET", "/invoices/:id/document", {
+      path: z.object({ id: BigIntCodec }),
+    }),
+  },
 };
+
+type InvoiceState = "draft" | "pending" | "paid";
+
+function getState(invoice: InvoiceRecord): InvoiceState {
+  if (invoice.events.paid) {
+    return "paid";
+  } else if (invoice.events.finalized) {
+    return "pending";
+  } else {
+    return "draft";
+  }
+}
+
+const stateLabels = {
+  "draft": "Draft",
+  "pending": "Pending",
+  "paid": "Paid",
+} as const;
 
 export const routes = [
   route(
@@ -62,6 +90,8 @@ export const routes = [
               <tr>
                 <th>Invoice No.</th>
                 <th>Student</th>
+                <th>Date</th>
+                <th>State</th>
                 <th>Actions</th>
               </tr>
             </thead>
@@ -71,12 +101,44 @@ export const routes = [
                   <td>{invoice.sequenceNumber}</td>
                   <td>{students.get(invoice.recipient.studentId)?.name}</td>
                   <td>
-                    <Form
-                      to={descriptors.document}
-                      path={{ id: Number(invoice.sequenceNumber) }}
-                    >
-                      <button type="submit">View</button>
-                    </Form>
+                    {invoice.events.created.timestamp
+                      .toZonedDateTimeISO("Europe/Amsterdam")
+                      .toLocaleString("nl", { dateStyle: "short" })}
+                  </td>
+                  <td>{stateLabels[getState(invoice)]}</td>
+                  <td>
+                    <div style={{ display: "flex", columnGap: "5px" }}>
+                      <Form
+                        to={descriptors.invoice.document}
+                        path={{ id: invoice.sequenceNumber }}
+                      >
+                        <button type="submit">View</button>
+                      </Form>
+
+                      <Form
+                        to={descriptors.invoice.markFinalized}
+                        path={{ id: invoice.sequenceNumber }}
+                        style={{
+                          display: getState(invoice) === "draft"
+                            ? "block"
+                            : "none",
+                        }}
+                      >
+                        <button type="submit">Finalize</button>
+                      </Form>
+
+                      <Form
+                        to={descriptors.invoice.markPaid}
+                        path={{ id: invoice.sequenceNumber }}
+                        style={{
+                          display: getState(invoice) === "pending"
+                            ? "block"
+                            : "none",
+                        }}
+                      >
+                        <button type="submit">Paid</button>
+                      </Form>
+                    </div>
                   </td>
                 </tr>
               ))}
@@ -258,9 +320,9 @@ export const routes = [
   ),
 
   route(
-    descriptors.document,
+    descriptors.invoice.document,
     async ({ path, user }) => {
-      const invoice = await Invoice.get(user.id, BigInt(path.id));
+      const invoice = await Invoice.get(user.id, path.id);
 
       return new Response(invoice.document.invoice, {
         headers: {
@@ -269,6 +331,26 @@ export const routes = [
             `inline; filename="invoice-${invoice.sequenceNumber}.pdf"`,
         },
       });
+    },
+    { user: Extras.User.required() },
+  ),
+
+  route(
+    descriptors.invoice.markFinalized,
+    async ({ path, user }) => {
+      await Invoice.markFinalized(user.id, path.id);
+
+      return redirect303(formatRoute(descriptors.index, {}));
+    },
+    { user: Extras.User.required() },
+  ),
+
+  route(
+    descriptors.invoice.markPaid,
+    async ({ path, user }) => {
+      await Invoice.markPaid(user.id, path.id);
+
+      return redirect303(formatRoute(descriptors.index, {}));
     },
     { user: Extras.User.required() },
   ),
