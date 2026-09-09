@@ -6,9 +6,9 @@ import { Form } from "@/lib/web/link.tsx";
 import { Responses } from "@/lib/web/respond.ts";
 import { descriptor, route } from "@/lib/web/route.ts";
 
-import business from "@/app/data/business.ts";
-import invoice from "@/app/data/invoice.ts";
-import student from "@/app/data/student.ts";
+import { Business } from "@/app/data/business.ts";
+import { Invoice } from "@/app/data/invoice.ts";
+import { Student } from "@/app/data/student.ts";
 import { renderInvoiceToBlob } from "@/app/shared/invoice.tsx";
 
 import { Extras } from "@/app/pages/_extra.ts";
@@ -33,10 +33,13 @@ export const routes = [
   route(
     descriptors.index,
     async ({ user }) => {
-      const students = await Array.fromAsync(student.list(user.id));
+      const [students, lastSeqNo] = await Promise.all([
+        Array.fromAsync(Student.list(user.id)),
+        Invoice.maxSequenceNumber(user.id),
+      ]);
 
-      const lastSeqNo = await invoice.maxSequenceNumber(user.id) ??
-        BigInt(Temporal.Now.plainDateISO().year) * 10_000n;
+      const nextSeqNo = 1n +
+        (lastSeqNo ?? BigInt(Temporal.Now.plainDateISO().year) * 10_000n);
 
       return (
         <PageLayout title="Invoices" user={user}>
@@ -49,8 +52,8 @@ export const routes = [
                   type="number"
                   inputMode="numeric"
                   step={1}
-                  min={Number(lastSeqNo + 1n)}
-                  defaultValue={Number(lastSeqNo + 1n)}
+                  min={Number(nextSeqNo)}
+                  defaultValue={Number(nextSeqNo)}
                 />
               </div>
               <div className="form-group">
@@ -139,18 +142,21 @@ export const routes = [
   route(
     descriptors.create,
     async ({ body, user }) => {
-      const stu = await student.get(user.id, body.student_id);
+      const [business, student] = await Promise.all([
+        Business.get(user.id),
+        Student.get(user.id, body.student_id),
+      ]);
 
       const created = Temporal.Now.zonedDateTimeISO();
 
       return new Response(
         await renderInvoiceToBlob({
           title: `Invoice ${body.sequence_no}`,
-          sender: await business.get(user.id),
+          sender: business,
           client: {
-            name: stu.billing.name,
-            address: stu.billing.address,
-            zipCity: stu.billing.location,
+            name: student.billing.name,
+            address: student.billing.address,
+            zipCity: student.billing.location,
           },
           invoiceMeta: {
             number: body.sequence_no.toString(),
@@ -162,7 +168,7 @@ export const routes = [
           },
           items: [
             {
-              description: `Lessen voor ${stu.name}`,
+              description: `Lessen voor ${student.name}`,
               qty: body.lesson_count,
               price: body.hourly_rate.toNumber(),
               vatPct: Number.parseInt(body.vat_rate),

@@ -41,8 +41,8 @@ export type UpdateRequest = {
   };
 };
 
-export default {
-  async *list(
+export namespace Student {
+  export async function* list(
     owner: string,
     options?: { includeInactive: boolean },
   ): AsyncGenerator<StudentRecord> {
@@ -57,9 +57,9 @@ export default {
 
       yield record;
     }
-  },
+  }
 
-  async create(
+  export async function create(
     owner: string,
     req: CreateRequest,
   ) {
@@ -72,9 +72,9 @@ export default {
     });
 
     await core.set(studentKeyOne(owner, id), record);
-  },
+  }
 
-  async get(
+  export async function get(
     owner: string,
     id: string,
   ) {
@@ -83,9 +83,9 @@ export default {
       throw new Error("not found");
     }
     return StudentRecordSchema.parse(entry.value);
-  },
+  }
 
-  async update(
+  export async function update(
     owner: string,
     id: string,
     req: UpdateRequest,
@@ -98,19 +98,19 @@ export default {
     const record = { ...req, id, status: "active" } satisfies StudentRecord;
 
     core.set(studentKeyOne(owner, id), StudentRecordSchema.encode(record));
-  },
+  }
 
-  async delete(
+  export async function remove(
     owner: string,
     id: string,
   ) {
-    const record = await this.get(owner, id);
+    const record = await get(owner, id);
 
     const updated = { ...record, status: "inactive" } satisfies StudentRecord;
 
     core.set(studentKeyOne(owner, id), StudentRecordSchema.encode(updated));
-  },
-};
+  }
+}
 
 function studentKeyOne(owner: string, id: string): Deno.KvKey {
   return [...studentKeyBase(owner), id];

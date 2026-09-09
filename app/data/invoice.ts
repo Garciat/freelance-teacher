@@ -50,17 +50,17 @@ export type CreateRequest = {
   };
 };
 
-export default {
-  async *list(owner: string) {
+export namespace Invoice {
+  export async function* list(owner: string) {
     for await (
       const entry of await core.list({ prefix: collectionKey(owner) })
     ) {
       const record = InvoiceRecordSchema.parse(entry.value);
       yield record;
     }
-  },
+  }
 
-  async maxSequenceNumber(owner: string) {
+  export async function maxSequenceNumber(owner: string) {
     for await (
       const entry of await core.list(
         { prefix: collectionKey(owner) },
@@ -72,9 +72,9 @@ export default {
     }
 
     return null;
-  },
+  }
 
-  async create(owner: string, req: CreateRequest) {
+  export async function create(owner: string, req: CreateRequest) {
     const record = InvoiceRecordSchema.encode({
       ...req,
       events: {
@@ -85,8 +85,8 @@ export default {
     });
 
     await core.set(recordKey(owner, req.sequenceNumber), record);
-  },
-};
+  }
+}
 
 function collectionKey(owner: string): Deno.KvKey {
   return ["owner", owner, "invoices"];

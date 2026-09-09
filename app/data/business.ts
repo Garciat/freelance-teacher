@@ -24,24 +24,24 @@ const fallback = {
   bic: "ABNANL2A",
 };
 
-export default {
-  async get(owner: string) {
+export namespace Business {
+  export async function get(owner: string) {
     const entry = await core.get(businessKey(owner));
 
     if (entry.versionstamp === null) {
-      await this.set(owner, fallback);
+      await set(owner, fallback);
       return fallback;
     }
 
     return BusinessRecordSchema.parse(entry.value);
-  },
+  }
 
-  async set(owner: string, req: SetRequest) {
+  export async function set(owner: string, req: SetRequest) {
     const record = BusinessRecordSchema.encode(req);
 
     await core.set(businessKey(owner), record);
-  },
-};
+  }
+}
 
 function businessKey(owner: string): Deno.KvKey {
   return ["owner", owner, "business"];

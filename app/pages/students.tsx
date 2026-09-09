@@ -10,7 +10,7 @@ import { Form, Link } from "@/lib/web/link.tsx";
 import { jsx, redirect303, Responses } from "@/lib/web/respond.ts";
 import { descriptor, formatRoute, route } from "@/lib/web/route.ts";
 
-import student from "@/app/data/student.ts";
+import { Student } from "@/app/data/student.ts";
 import { PageLayout } from "@/app/pages/_layouts/page.tsx";
 import { Extras } from "@/app/pages/_extra.ts";
 
@@ -83,7 +83,7 @@ export const routes = [
     descriptors.index,
     async ({ user }) => {
       const items = await Array.fromAsync(
-        student.list(user.id),
+        Student.list(user.id),
       );
 
       const displayItems = items.toSorted((a, b) =>
@@ -135,7 +135,7 @@ export const routes = [
     descriptors.register.post,
     async ({ body, user }) => {
       if (body.action === "save") {
-        await student.create(user.id, {
+        await Student.create(user.id, {
           name: body.name,
           billing: {
             name: body.billing_name,
@@ -152,7 +152,7 @@ export const routes = [
   route(
     descriptors.manage.get,
     async ({ path, user }) => {
-      const record = await student.get(user.id, path.id);
+      const record = await Student.get(user.id, path.id);
 
       return jsx(
         <PageLayout title="Students" user={user}>
@@ -181,7 +181,7 @@ export const routes = [
         return redirect303(formatRoute(descriptors.index, {}));
       }
 
-      await student.update(
+      await Student.update(
         user.id,
         path.id,
         {
@@ -205,7 +205,7 @@ export const routes = [
   route(
     descriptors.delete.post,
     async ({ path, user }) => {
-      await student.delete(user.id, path.id);
+      await Student.remove(user.id, path.id);
 
       return redirect303(formatRoute(descriptors.index, {}));
     },

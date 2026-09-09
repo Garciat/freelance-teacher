@@ -10,7 +10,7 @@ import { Form } from "@/lib/web/link.tsx";
 import { redirect303, Responses } from "@/lib/web/respond.ts";
 import { descriptor, formatRoute, route } from "@/lib/web/route.ts";
 
-import business from "@/app/data/business.ts";
+import { Business } from "@/app/data/business.ts";
 import { PageLayout } from "@/app/pages/_layouts/page.tsx";
 import { Extras } from "@/app/pages/_extra.ts";
 
@@ -58,7 +58,7 @@ export const routes = [
   route(
     descriptors.index,
     async ({ user }) => {
-      const record = await business.get(user.id);
+      const record = await Business.get(user.id);
 
       return (
         <PageLayout title="Business" user={user}>
@@ -77,7 +77,7 @@ export const routes = [
     descriptors.save,
     async ({ body, user }) => {
       if (body.action === "save") {
-        await business.set(user.id, body);
+        await Business.set(user.id, body);
       }
 
       return redirect303(formatRoute(descriptors.index, {}));
