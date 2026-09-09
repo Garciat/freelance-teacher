@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { serveDir } from "@std/http";
+import { serveDir, serveFile } from "@std/http";
 
 import * as esbuild from "esbuild";
 
@@ -290,6 +290,22 @@ export function localFiles(
   return ({ ctx }) => {
     if (ctx.url.pathname.startsWith(`/${urlRoot}`)) {
       return serveDir(ctx.req, { urlRoot, fsRoot: actualFsRoot, quiet: true });
+    }
+    return null;
+  };
+}
+
+export function localFile(
+  path: string,
+  fsPath: string,
+): RouteHandler {
+  const actualFsPath = fsPath.startsWith("file://")
+    ? fsPath.slice("file://".length)
+    : fsPath;
+
+  return ({ ctx }) => {
+    if (ctx.url.pathname === path) {
+      return serveFile(ctx.req, actualFsPath);
     }
     return null;
   };

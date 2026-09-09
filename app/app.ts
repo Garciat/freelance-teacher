@@ -1,6 +1,6 @@
 import { decorators } from "@/lib/web/decorator/base.ts";
 import { logging } from "@/lib/web/decorator/logging.ts";
-import { bundle, localFiles, routes } from "@/lib/web/route.ts";
+import { bundle, localFile, localFiles, routes } from "@/lib/web/route.ts";
 
 import { AuthSession } from "@/app/session.ts";
 
@@ -23,6 +23,10 @@ export default decorators([
     localFiles(
       "static",
       import.meta.resolve("./static"),
+    ),
+    localFile(
+      "/favicon.ico",
+      import.meta.resolve("./static/favicon.ico"),
     ),
     bundle(
       "/shared",
