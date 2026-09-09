@@ -3,6 +3,7 @@
 
   --background: light-dark(#FFF, #111);
   --color: light-dark(#000, #FFF);
+  --accent: #268bd2;
 }
 
 html {
@@ -257,5 +258,43 @@ button {
 
   button {
     padding: 5px 10px;
+  }
+}
+
+/* Components */
+
+.item-details {
+  max-width: 30em;
+  margin: 1em auto;
+  padding: 1em;
+  border: 2px solid
+    color-mix(in oklab, var(--background), var(--color) 30%);
+  border-radius: 5px;
+
+  display: flex;
+  flex-direction: column;
+  row-gap: 1em;
+
+  .item-property {
+    display: flex;
+    flex-direction: column;
+    row-gap: .25em;
+
+    > h3 {
+      margin: 0;
+      text-transform: uppercase;
+      font-size: .8em;
+      font-weight: normal;
+      color:
+        color-mix(in oklab, var(--background), var(--color) 60%);
+    }
+    > p {
+      margin: 0;
+    }
+  }
+
+  .actions {
+    display: flex;
+    column-gap: 1em;
   }
 }
