@@ -1,86 +1,18 @@
-import z from "zod";
-
-import { Body } from "@/lib/web/body.ts";
-import {
-  FormRegistry,
-  makePostSchema,
-  SchemaBasedForm,
-} from "@/lib/web/forms.tsx";
+import { SchemaBasedForm } from "@/lib/web/forms.tsx";
 import { Form, Link } from "@/lib/web/link.tsx";
-import { jsx, redirect303, Responses } from "@/lib/web/respond.ts";
-import { descriptor, formatRoute, route } from "@/lib/web/route.ts";
+import { jsx, redirect303 } from "@/lib/web/respond.ts";
+import { formatRoute, route } from "@/lib/web/route.ts";
 
 import { Student } from "@/app/data/student.ts";
 import { PageLayout } from "@/app/pages/_layouts/page.tsx";
 import { Extras } from "@/app/pages/_extra.ts";
+import { PagesStudent, RegisterFormSchema } from "@/app/pages/student/_meta.ts";
 
-const RegisterFormSchema = z.object({
-  name: z.string().trim().nonempty().register(FormRegistry, {
-    label: "Name",
-    type: "text",
-    placeholder: "John Student",
-  }),
-  billing_name: z.string().trim().nonempty().register(FormRegistry, {
-    label: "Billing Name",
-    type: "text",
-    placeholder: "Mary van Parent",
-  }),
-  billing_address: z.string().trim().nonempty().register(FormRegistry, {
-    label: "Billing Address",
-    type: "text",
-    placeholder: "Street 420",
-  }),
-  billing_location: z.string().trim().nonempty().register(FormRegistry, {
-    label: "Billing Location",
-    type: "text",
-    placeholder: "1013BH Amsterdam",
-  }),
-  contact_email: z.union([z.literal(""), z.email()]).register(FormRegistry, {
-    label: "Contact E-mail",
-    type: "text",
-    inputMode: "email",
-    placeholder: "hello@world.com",
-  }),
-  contact_whatsapp: z.string().trim().optional().register(FormRegistry, {
-    label: "Contact WhatsApp",
-    type: "text",
-    inputMode: "tel",
-    placeholder: "+31 612300789",
-  }),
-});
-
-export const descriptors = {
-  index: descriptor("GET", "/students/", {
-    response: Responses.jsx,
-  }),
-  register: {
-    get: descriptor("GET", "/students/register", {
-      response: Responses.jsx,
-    }),
-    post: descriptor("POST", "/students/register", {
-      body: Body.formData(makePostSchema(RegisterFormSchema)),
-    }),
-  },
-  manage: {
-    get: descriptor("GET", "/students/manage/:id", {
-      path: z.object({ id: z.uuid() }),
-    }),
-    post: descriptor("POST", "/students/manage/:id", {
-      path: z.object({ id: z.uuid() }),
-      body: Body.formData(makePostSchema(RegisterFormSchema)),
-    }),
-  },
-  delete: {
-    post: descriptor("POST", "/students/delete/:id", {
-      path: z.object({ id: z.uuid() }),
-      body: Body.formData(z.object({})),
-    }),
-  },
-};
+// TODO split into app/pages/student/*
 
 export const routes = [
   route(
-    descriptors.index,
+    PagesStudent.index,
     async ({ user }) => {
       const items = await Array.fromAsync(
         Student.list(user.id),
@@ -92,7 +24,7 @@ export const routes = [
 
       return (
         <PageLayout title="Students" user={user}>
-          <Link to={descriptors.register.get}>Register New Student</Link>
+          <Link to={PagesStudent.register.get}>Register New Student</Link>
           <table>
             <thead>
               <tr>
@@ -105,7 +37,7 @@ export const routes = [
                 <tr key={record.id}>
                   <td>{record.name}</td>
                   <td>
-                    <Form to={descriptors.manage.get} path={{ id: record.id }}>
+                    <Form to={PagesStudent.manage.get} path={{ id: record.id }}>
                       <button type="submit">Manage</button>
                     </Form>
                   </td>
@@ -119,10 +51,10 @@ export const routes = [
     { user: Extras.User.required() },
   ),
   route(
-    descriptors.register.get,
+    PagesStudent.register.get,
     ({ user }) => (
       <PageLayout title="Students" user={user}>
-        <Form to={descriptors.register.post}>
+        <Form to={PagesStudent.register.post}>
           <SchemaBasedForm
             schema={RegisterFormSchema}
           />
@@ -132,7 +64,7 @@ export const routes = [
     { user: Extras.User.required() },
   ),
   route(
-    descriptors.register.post,
+    PagesStudent.register.post,
     async ({ body, user }) => {
       if (body.action === "save") {
         await Student.create(user.id, {
@@ -145,18 +77,18 @@ export const routes = [
         });
       }
 
-      return redirect303(formatRoute(descriptors.index, {}));
+      return redirect303(formatRoute(PagesStudent.index, {}));
     },
     { user: Extras.User.required() },
   ),
   route(
-    descriptors.manage.get,
+    PagesStudent.manage.get,
     async ({ path, user }) => {
       const record = await Student.get(user.id, path.id);
 
       return jsx(
         <PageLayout title="Students" user={user}>
-          <Form to={descriptors.manage.post} path={{ id: path.id }}>
+          <Form to={PagesStudent.manage.post} path={{ id: path.id }}>
             <SchemaBasedForm
               schema={RegisterFormSchema}
               value={{
@@ -175,10 +107,10 @@ export const routes = [
     { user: Extras.User.required() },
   ),
   route(
-    descriptors.manage.post,
+    PagesStudent.manage.post,
     async ({ path, body, user }) => {
       if (body.action === "cancel") {
-        return redirect303(formatRoute(descriptors.index, {}));
+        return redirect303(formatRoute(PagesStudent.index, {}));
       }
 
       await Student.update(
@@ -198,16 +130,16 @@ export const routes = [
         },
       );
 
-      return redirect303(formatRoute(descriptors.index, {}));
+      return redirect303(formatRoute(PagesStudent.index, {}));
     },
     { user: Extras.User.required() },
   ),
   route(
-    descriptors.delete.post,
+    PagesStudent.delete.post,
     async ({ path, user }) => {
       await Student.remove(user.id, path.id);
 
-      return redirect303(formatRoute(descriptors.index, {}));
+      return redirect303(formatRoute(PagesStudent.index, {}));
     },
     { user: Extras.User.required() },
   ),

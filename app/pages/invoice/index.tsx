@@ -7,6 +7,7 @@ import { Student } from "@/app/data/student.ts";
 import { Extras } from "@/app/pages/_extra.ts";
 import { PageLayout } from "@/app/pages/_layouts/page.tsx";
 import { PagesInvoice } from "@/app/pages/invoice/_meta.ts";
+import { PagesStudent } from "@/app/pages/student/_meta.ts";
 
 type InvoiceState = "draft" | "pending" | "paid";
 
@@ -41,6 +42,10 @@ export const RouteInvoiceIndex = route(
       ),
     );
 
+    const formatEventDate = (ts: Temporal.Instant) =>
+      ts.toZonedDateTimeISO("Europe/Amsterdam")
+        .toLocaleString("nl", { dateStyle: "short" });
+
     return (
       <PageLayout title="Invoices" user={user}>
         <Link to={PagesInvoice.create.get}>New Invoice</Link>
@@ -52,15 +57,33 @@ export const RouteInvoiceIndex = route(
             </div>
             <div className="item-property">
               <h3>Student</h3>
-              <p>{students.get(invoice.recipient.studentId)?.name}</p>
-            </div>
-            <div className="item-property">
-              <h3>Date</h3>
               <p>
-                {invoice.events.created.timestamp
-                  .toZonedDateTimeISO("Europe/Amsterdam")
-                  .toLocaleString("nl", { dateStyle: "short" })}
+                <Link
+                  to={PagesStudent.manage.get}
+                  path={{ id: students.get(invoice.recipient.studentId)!.id }}
+                  className="navigate"
+                >
+                  {students.get(invoice.recipient.studentId)!.name}
+                </Link>
               </p>
+            </div>
+            <div className="horizontal-fill">
+              <div className="item-property">
+                <h3>Created</h3>
+                <p>{formatEventDate(invoice.events.created.timestamp)}</p>
+              </div>
+              {invoice.events.finalized && (
+                <div className="item-property">
+                  <h3>Finalized</h3>
+                  <p>{formatEventDate(invoice.events.finalized.timestamp)}</p>
+                </div>
+              )}
+              {invoice.events.paid && (
+                <div className="item-property">
+                  <h3>Paid</h3>
+                  <p>{formatEventDate(invoice.events.paid.timestamp)}</p>
+                </div>
+              )}
             </div>
             <div className="item-property">
               <h3>Status</h3>

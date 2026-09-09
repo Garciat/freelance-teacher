@@ -3,7 +3,7 @@
 
   --background: light-dark(#FFF, #111);
   --color: light-dark(#000, #FFF);
-  --accent: #268bd2;
+  --accent: #1a9fff;
 }
 
 html {
@@ -47,7 +47,24 @@ body > main {
 }
 
 a {
+  color: var(--accent);
   text-decoration: none;
+
+  &:hover {
+    text-decoration: underline;
+  }
+
+  &:visited {
+    color: var(--accent);
+  }
+
+  &.navigate {
+    &::after {
+      display: inline-block;
+      content: '↗';
+      padding-left: .25em;
+    }
+  }
 }
 
 iframe {
@@ -296,5 +313,13 @@ button {
   .actions {
     display: flex;
     column-gap: 1em;
+  }
+}
+
+.horizontal-fill {
+  display: flex;
+
+  > * {
+    flex-grow: 1;
   }
 }
