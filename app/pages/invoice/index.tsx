@@ -74,7 +74,10 @@ export const RouteInvoiceIndex = route(
                     <span>{invoice.sequenceNumber}</span>
                     <Link
                       to={PagesInvoice.invoice.document}
-                      path={{ id: invoice.sequenceNumber }}
+                      path={{
+                        id: invoice.sequenceNumber,
+                        filename: `invoice-${invoice.sequenceNumber}.pdf`,
+                      }}
                       className="pill navigate"
                     >
                       PDF

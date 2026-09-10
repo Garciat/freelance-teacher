@@ -101,7 +101,10 @@ export const RouteInvoiceSend = {
                 src={formatRoute(
                   PagesInvoice.invoice.document,
                   {
-                    path,
+                    path: {
+                      id: path.id,
+                      filename: "preview.pdf",
+                    },
                     hash: {
                       "toolbar": "0",
                       "navpanes": "0",

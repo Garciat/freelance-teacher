@@ -44,8 +44,8 @@ export const PagesInvoice = {
       }),
     },
 
-    document: descriptor("GET", "/invoices/:id/document", {
-      path: z.object({ id: BigIntCodec }),
+    document: descriptor("GET", "/invoices/:id/document/:filename", {
+      path: z.object({ id: BigIntCodec, filename: z.string() }),
     }),
   },
 } as const;
