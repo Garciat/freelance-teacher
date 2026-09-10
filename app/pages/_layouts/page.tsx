@@ -33,7 +33,10 @@ export const PageLayout: React.FC<PageLayoutProps> = (
     <main>
       <header className="site-navigation">
         <div className="wrapper">
-          <h1>🧑‍🏫</h1>
+          <h1>
+            <span className="icon">🧑‍🏫</span>
+            <span className="text">{title}</span>
+          </h1>
           <button
             type="button"
             className="menu-toggle"
@@ -64,12 +67,8 @@ export const PageLayout: React.FC<PageLayoutProps> = (
         </div>
       </header>
       <div className="content">
-        <h1>{title}</h1>
         {children}
       </div>
-      <footer>
-        <p className="text-center">This is the footer (:</p>
-      </footer>
     </main>
   </BaseLayout>
 );
