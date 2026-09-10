@@ -6,6 +6,7 @@ const StudentRecordSchema = z.object({
   id: z.uuid(),
   status: z.literal(["active", "inactive"]),
   name: z.string().nonempty(),
+  ageCategory: z.enum(["adult", "child"]).default("adult"),
   billing: z.object({
     name: z.string().nonempty(),
     address: z.string().nonempty(),
@@ -19,8 +20,11 @@ const StudentRecordSchema = z.object({
 
 export type StudentRecord = z.output<typeof StudentRecordSchema>;
 
+export type AgeCategory = StudentRecord["ageCategory"];
+
 export type CreateRequest = {
   name: string;
+  ageCategory: AgeCategory;
   billing: {
     name: string;
     address: string;
@@ -34,6 +38,7 @@ export type CreateRequest = {
 
 export type UpdateRequest = {
   name: string;
+  ageCategory: AgeCategory;
   billing: {
     name: string;
     address: string;

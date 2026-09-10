@@ -12,6 +12,17 @@ export const RegisterFormSchema = z.object({
     type: "text",
     placeholder: "John Student",
   }),
+  age_category: z.enum(["adult", "child"]).default("adult").register(
+    FormRegistry,
+    {
+      label: "Age Category",
+      type: "select",
+      options: [
+        { value: "adult", label: "Adult" },
+        { value: "child", label: "Child" },
+      ],
+    },
+  ),
   billing_name: z.string().trim().nonempty().register(FormRegistry, {
     label: "Billing Name",
     type: "text",

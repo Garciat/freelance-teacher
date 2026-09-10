@@ -3,13 +3,18 @@ import { Form, Link } from "@/lib/web/link.tsx";
 import { jsx, redirect303 } from "@/lib/web/respond.ts";
 import { formatRoute, route } from "@/lib/web/route.ts";
 
-import { Student } from "@/app/data/student.ts";
+import { AgeCategory, Student } from "@/app/data/student.ts";
 import { PageLayout } from "@/app/pages/_layouts/page.tsx";
 import { Extras } from "@/app/pages/_extra.ts";
 import { PagesStudent, RegisterFormSchema } from "@/app/pages/student/_meta.ts";
 import { makeToastHeaders } from "@/lib/web/toast/backend.ts";
 
 // TODO split into app/pages/student/*
+
+const ageCategoryLabels = {
+  adult: "Adult",
+  child: "Child",
+} as const satisfies Record<AgeCategory, string>;
 
 export const routes = [
   route(
@@ -38,6 +43,35 @@ export const routes = [
                   <p>{student.name}</p>
                 </div>
                 <div className="item-property">
+                  <h4>Category</h4>
+                  <p>{ageCategoryLabels[student.ageCategory]}</p>
+                </div>
+              </div>
+              <div className="horizontal-fill">
+                <div className="item-property">
+                  <h4>Contact</h4>
+                  <div className="horizontal-stack">
+                    {student.contact?.email && (
+                      <a
+                        href={`mailto:${student.contact.email}`}
+                        className="pill navigate"
+                      >
+                        E-mail
+                      </a>
+                    )}
+                    {student.contact?.whatsapp && (
+                      <a
+                        href={`https://wa.me/${
+                          student.contact.whatsapp.replaceAll(/[^\d]/g, "")
+                        }`}
+                        className="pill navigate"
+                      >
+                        WhatsApp
+                      </a>
+                    )}
+                  </div>
+                </div>
+                <div className="item-property">
                   <h4>Actions</h4>
                   <div className="horizontal-stack">
                     <Link
@@ -48,29 +82,6 @@ export const routes = [
                       Edit
                     </Link>
                   </div>
-                </div>
-              </div>
-              <div className="item-property">
-                <h4>Contact</h4>
-                <div className="horizontal-stack">
-                  {student.contact?.email && (
-                    <a
-                      href={`mailto:${student.contact.email}`}
-                      className="pill navigate"
-                    >
-                      E-mail
-                    </a>
-                  )}
-                  {student.contact?.whatsapp && (
-                    <a
-                      href={`https://wa.me/${
-                        student.contact.whatsapp.replaceAll(/[^\d]/g, "")
-                      }`}
-                      className="pill navigate"
-                    >
-                      WhatsApp
-                    </a>
-                  )}
                 </div>
               </div>
             </article>
@@ -102,6 +113,7 @@ export const routes = [
 
       await Student.create(user.id, {
         name: body.name,
+        ageCategory: body.age_category,
         billing: {
           name: body.billing_name,
           address: body.billing_address,
@@ -133,6 +145,7 @@ export const routes = [
               schema={RegisterFormSchema}
               value={{
                 name: record.name,
+                age_category: record.ageCategory,
                 billing_name: record.billing.name,
                 billing_address: record.billing.address,
                 billing_location: record.billing.location,
@@ -160,6 +173,7 @@ export const routes = [
         path.id,
         {
           name: body.name,
+          ageCategory: body.age_category,
           billing: {
             name: body.billing_name,
             address: body.billing_address,

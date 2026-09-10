@@ -2,21 +2,22 @@ import z from "zod";
 
 export type UIFieldMeta = {
   label: string;
-  type: "text" | "number" | "password" | "textarea" | "checkbox";
+  type: "text" | "number" | "password" | "textarea" | "checkbox" | "select";
   inputMode?: React.HTMLAttributes<"input">["inputMode"];
   placeholder?: string;
+  options?: { value: string; label: string }[];
 };
 
 export const FormRegistry = z.registry<UIFieldMeta>();
 
-interface FormFieldConfig<T> extends UIFieldMeta {
+interface FormFieldConfig extends UIFieldMeta {
   name: string;
   required: boolean;
 }
 
-function generateFormConfig<T>(
+function generateFormConfig(
   schema: z.ZodObject,
-): FormFieldConfig<T>[] {
+): FormFieldConfig[] {
   return Array.from(function* () {
     for (const [fieldName, fieldSchema] of Object.entries(schema.shape)) {
       const meta = FormRegistry.get(fieldSchema);
@@ -29,7 +30,7 @@ function generateFormConfig<T>(
 
       yield {
         ...meta,
-        name: fieldName as Extract<keyof T, string>,
+        name: fieldName,
         required: isRequired,
       };
     }
@@ -77,28 +78,7 @@ export const SchemaBasedForm = <T extends z.ZodRawShape>({
           <label htmlFor={field.name}>
             {field.label}
           </label>
-
-          {field.type === "textarea"
-            ? (
-              <textarea
-                id={field.name}
-                name={field.name}
-                placeholder={field.placeholder}
-                required={field.required}
-              />
-            )
-            : (
-              <input
-                id={field.name}
-                name={field.name}
-                type={field.type}
-                inputMode={field.inputMode}
-                placeholder={field.placeholder}
-                required={field.required}
-                defaultChecked={field.type === "checkbox" ? false : undefined}
-                defaultValue={record?.[field.name]}
-              />
-            )}
+          {renderField(field, record)}
         </div>
       ))}
       <footer className="actions">
@@ -112,3 +92,45 @@ export const SchemaBasedForm = <T extends z.ZodRawShape>({
     </div>
   );
 };
+
+function renderField(field: FormFieldConfig, record?: Record<string, string>) {
+  switch (field.type) {
+    case "textarea":
+      return (
+        <textarea
+          id={field.name}
+          name={field.name}
+          placeholder={field.placeholder}
+          required={field.required}
+        >
+          {record?.[field.name]}
+        </textarea>
+      );
+    case "select":
+      return (
+        <select
+          id={field.name}
+          name={field.name}
+          required={field.required}
+          defaultValue={record?.[field.name]}
+        >
+          {field.options?.map((option) => (
+            <option value={option.value}>{option.label}</option>
+          ))}
+        </select>
+      );
+    default:
+      return (
+        <input
+          id={field.name}
+          name={field.name}
+          type={field.type}
+          inputMode={field.inputMode}
+          placeholder={field.placeholder}
+          required={field.required}
+          defaultChecked={field.type === "checkbox" ? false : undefined}
+          defaultValue={record?.[field.name]}
+        />
+      );
+  }
+}
