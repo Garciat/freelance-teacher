@@ -25,26 +25,51 @@ export const routes = [
       return (
         <PageLayout title="Students" user={user}>
           <Link to={PagesStudent.register.get}>Register New Student</Link>
-          <table>
-            <thead>
-              <tr>
-                <th>Name</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {displayItems.map((record) => (
-                <tr key={record.id}>
-                  <td>{record.name}</td>
-                  <td>
-                    <Form to={PagesStudent.manage.get} path={{ id: record.id }}>
-                      <button type="submit">Manage</button>
-                    </Form>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+          {displayItems.map((student, index) => (
+            <article key={index} className="item-details">
+              <div className="horizontal-fill">
+                <div className="item-property">
+                  <h4>Name</h4>
+                  <p>{student.name}</p>
+                </div>
+                <div className="item-property">
+                  <h4>Actions</h4>
+                  <div className="horizontal-stack">
+                    <Link
+                      to={PagesStudent.manage.get}
+                      path={{ id: student.id }}
+                      className="pill"
+                    >
+                      Edit
+                    </Link>
+                  </div>
+                </div>
+              </div>
+              <div className="item-property">
+                <h4>Contact</h4>
+                <div className="horizontal-stack">
+                  {student.contact?.email && (
+                    <a
+                      href={`mailto:${student.contact.email}`}
+                      className="pill navigate"
+                    >
+                      Email
+                    </a>
+                  )}
+                  {student.contact?.whatsapp && (
+                    <a
+                      href={`https://wa.me/${
+                        student.contact.whatsapp.replaceAll(/[^\d]/g, "")
+                      }`}
+                      className="pill navigate"
+                    >
+                      WhatsApp
+                    </a>
+                  )}
+                </div>
+              </div>
+            </article>
+          ))}
         </PageLayout>
       );
     },

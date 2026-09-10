@@ -75,7 +75,7 @@ export const RouteInvoiceIndex = route(
                     <Link
                       to={PagesInvoice.invoice.document}
                       path={{ id: invoice.sequenceNumber }}
-                      className="pill"
+                      className="pill navigate"
                     >
                       PDF
                     </Link>
@@ -98,7 +98,7 @@ export const RouteInvoiceIndex = route(
                       <Link
                         to={PagesInvoice.invoice.send.get}
                         path={{ id: invoice.sequenceNumber }}
-                        className="pill"
+                        className="pill navigate"
                       >
                         Send Invoice
                       </Link>

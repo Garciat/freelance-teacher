@@ -74,12 +74,6 @@ a {
     border-radius: 10px;
     color: white;
     font-size: 80%;
-
-    &::after {
-      display: inline-block;
-      content: '↗';
-      padding-left: .25em;
-    }
   }
 }
 
@@ -360,6 +354,7 @@ button {
 
   > * {
     flex-grow: 1;
+    width: 0;
   }
 }
 
