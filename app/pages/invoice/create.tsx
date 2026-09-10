@@ -12,6 +12,7 @@ import { renderInvoiceToBuffer } from "@/app/shared/invoice.tsx";
 import { Extras } from "@/app/pages/_extra.ts";
 import { PageLayout } from "@/app/pages/_layouts/page.tsx";
 import { PagesInvoice } from "@/app/pages/invoice/_meta.ts";
+import { makeToastHeaders } from "@/lib/web/toast/backend.ts";
 
 export const RouteInvoiceCreate = {
   get: route(
@@ -182,7 +183,10 @@ export const RouteInvoiceCreate = {
         },
       });
 
-      return redirect303(formatRoute(PagesInvoice.index, {}));
+      return redirect303(
+        formatRoute(PagesInvoice.index, {}),
+        makeToastHeaders("✅ New invoice created"),
+      );
     },
     { user: Extras.User.required() },
   ),
