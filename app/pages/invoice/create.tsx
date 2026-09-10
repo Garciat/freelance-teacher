@@ -104,6 +104,7 @@ export const RouteInvoiceCreate = {
                   type="submit"
                   name="action"
                   value="save"
+                  className="primary"
                 >
                   OK
                 </button>

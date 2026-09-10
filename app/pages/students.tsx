@@ -25,7 +25,11 @@ export const routes = [
 
       return (
         <PageLayout title="Students" user={user}>
-          <Link to={PagesStudent.register.get}>Register New Student</Link>
+          <div className="toolbar horizontal-stack">
+            <Link to={PagesStudent.register.get} className="pill primary">
+              Register New Student
+            </Link>
+          </div>
           {displayItems.map((student, index) => (
             <article key={index} className="item-details">
               <div className="horizontal-fill">

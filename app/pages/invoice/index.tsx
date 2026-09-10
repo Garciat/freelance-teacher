@@ -59,7 +59,11 @@ export const RouteInvoiceIndex = route(
 
     return (
       <PageLayout title="Invoices" user={user}>
-        <Link to={PagesInvoice.create.get}>New Invoice</Link>
+        <div className="toolbar horizontal-stack">
+          <Link to={PagesInvoice.create.get} className="pill primary">
+            Draft New Invoice
+          </Link>
+        </div>
         {invoicesByMonth.entries().map(([yearMonthStr, invoices]) => (
           <section>
             <h2>
@@ -128,32 +132,37 @@ export const RouteInvoiceIndex = route(
                     </div>
                   )}
                 </div>
-                <div className="item-property">
-                  <h4>Status</h4>
-                  <div className="horizontal-stack">
-                    <span>{stateLabels[getState(invoice)]}</span>
-                    <Form
-                      to={PagesInvoice.invoice.markFinalized}
-                      path={{ id: invoice.sequenceNumber }}
-                      style={{
-                        display: getState(invoice) === "draft"
-                          ? "block"
-                          : "none",
-                      }}
-                    >
-                      <button type="submit">Finalize</button>
-                    </Form>
-                    <Form
-                      to={PagesInvoice.invoice.markPaid}
-                      path={{ id: invoice.sequenceNumber }}
-                      style={{
-                        display: getState(invoice) === "pending"
-                          ? "block"
-                          : "none",
-                      }}
-                    >
-                      <button type="submit">Confirm Payment</button>
-                    </Form>
+                <div className="horizontal-fill">
+                  <div className="item-property">
+                    <h4>Status</h4>
+                    <p>{stateLabels[getState(invoice)]}</p>
+                  </div>
+                  <div className="item-property">
+                    <h4>Actions</h4>
+                    <div className="horizontal-stack">
+                      <Form
+                        to={PagesInvoice.invoice.markFinalized}
+                        path={{ id: invoice.sequenceNumber }}
+                        style={{
+                          display: getState(invoice) === "draft"
+                            ? "block"
+                            : "none",
+                        }}
+                      >
+                        <button type="submit">Finalize</button>
+                      </Form>
+                      <Form
+                        to={PagesInvoice.invoice.markPaid}
+                        path={{ id: invoice.sequenceNumber }}
+                        style={{
+                          display: getState(invoice) === "pending"
+                            ? "block"
+                            : "none",
+                        }}
+                      >
+                        <button type="submit">Confirm Payment</button>
+                      </Form>
+                    </div>
                   </div>
                 </div>
               </article>

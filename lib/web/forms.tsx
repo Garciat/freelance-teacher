@@ -102,7 +102,9 @@ export const SchemaBasedForm = <T extends z.ZodRawShape>({
         </div>
       ))}
       <footer className="actions">
-        <button type="submit" name="action" value="save">OK</button>
+        <button type="submit" name="action" value="save" className="primary">
+          OK
+        </button>
         <button type="submit" name="action" value="cancel" formNoValidate>
           Cancel
         </button>
