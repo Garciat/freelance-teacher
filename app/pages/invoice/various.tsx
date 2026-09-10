@@ -5,6 +5,7 @@ import { Invoice } from "@/app/data/invoice.ts";
 
 import { Extras } from "@/app/pages/_extra.ts";
 import { PagesInvoice } from "@/app/pages/invoice/_meta.ts";
+import { makeToastHeaders } from "@/lib/web/toast/backend.ts";
 
 export const RouteInvoice = {
   document: route(
@@ -28,7 +29,10 @@ export const RouteInvoice = {
     async ({ path, user }) => {
       await Invoice.markFinalized(user.id, path.id);
 
-      return redirect303(formatRoute(PagesInvoice.index, {}));
+      return redirect303(
+        formatRoute(PagesInvoice.index, {}),
+        makeToastHeaders("✅ Invoice finalized"),
+      );
     },
     { user: Extras.User.required() },
   ),
@@ -38,7 +42,10 @@ export const RouteInvoice = {
     async ({ path, user }) => {
       await Invoice.markPaid(user.id, path.id);
 
-      return redirect303(formatRoute(PagesInvoice.index, {}));
+      return redirect303(
+        formatRoute(PagesInvoice.index, {}),
+        makeToastHeaders("✅ Invoice payment confirmed"),
+      );
     },
     { user: Extras.User.required() },
   ),

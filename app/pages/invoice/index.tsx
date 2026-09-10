@@ -23,7 +23,7 @@ function getState(invoice: InvoiceRecord): InvoiceState {
 
 const stateLabels = {
   "draft": "Draft",
-  "pending": "Pending",
+  "pending": "Pending Payment",
   "paid": "Paid",
 } as const;
 
@@ -117,14 +117,6 @@ export const RouteInvoiceIndex = route(
                     <h4>Created</h4>
                     <p>{formatEventDate(invoice.events.created.timestamp)}</p>
                   </div>
-                  {invoice.events.finalized && (
-                    <div className="item-property">
-                      <h4>Finalized</h4>
-                      <p>
-                        {formatEventDate(invoice.events.finalized.timestamp)}
-                      </p>
-                    </div>
-                  )}
                   {invoice.events.paid && (
                     <div className="item-property">
                       <h4>Paid</h4>
