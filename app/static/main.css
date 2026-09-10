@@ -8,6 +8,9 @@
   --color-primary-300: #66c2ff;
   --color-primary-400: #1a9fff;
   --color-primary-500: #07c;
+
+  --navbar-height: 60px;
+  --glass-filter: blur(20px) saturate(150%);
 }
 
 html {
@@ -114,20 +117,19 @@ button {
 }
 
 .content {
-  margin-top: 70px;
+  margin-top: calc(var(--navbar-height) + 1.5em);
 }
 
 .site-navigation {
   width: 100vw;
+  height: var(--navbar-height);
   position: fixed;
   top: 0;
   left: 0;
-  backdrop-filter: blur(20px);
-
-  --wrapper-height: 60px;
+  backdrop-filter: var(--glass-filter);
 
   .wrapper {
-    height: var(--wrapper-height);
+    height: 100%;
     max-width: 920px;
     margin: 0 auto;
     padding: 0 15px;
@@ -216,12 +218,12 @@ button {
 
     &:popover-open {
       display: block;
-      top: var(--wrapper-height);
+      top: var(--navbar-height);
       margin: 0;
       padding: 0;
       border: 0;
       background: transparent;
-      backdrop-filter: blur(20px);
+      backdrop-filter: var(--glass-filter);
     }
 
     ul {
@@ -236,7 +238,8 @@ button {
 
         li {
           flex-grow: 1;
-          border-top: 1px solid var(--color);
+          border-top:
+            1px solid color-mix(in oklab, var(--color), transparent 50%);
         }
       }
 

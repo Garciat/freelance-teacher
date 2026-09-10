@@ -118,8 +118,21 @@ export const RouteInvoiceSend = {
           </section>
           <Form to={PagesInvoice.invoice.send.post} path={path}>
             <p className="horizontal-stack">
-              <button type="submit" name="action" value="save">Send</button>
-              <button type="submit" name="action" value="cancel">Cancel</button>
+              <button
+                type="submit"
+                name="action"
+                value="save"
+                className="primary"
+              >
+                Send
+              </button>
+              <button
+                type="submit"
+                name="action"
+                value="cancel"
+              >
+                Cancel
+              </button>
             </p>
           </Form>
         </PageLayout>

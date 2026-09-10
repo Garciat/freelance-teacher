@@ -58,7 +58,7 @@ export const routes = [
                       href={`mailto:${student.contact.email}`}
                       className="pill navigate"
                     >
-                      Email
+                      E-mail
                     </a>
                   )}
                   {student.contact?.whatsapp && (
