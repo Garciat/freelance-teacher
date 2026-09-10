@@ -118,6 +118,7 @@ button {
 
 .content {
   margin-top: calc(var(--navbar-height) + 1.5em);
+  margin-bottom: 8em;
 }
 
 .site-navigation {
