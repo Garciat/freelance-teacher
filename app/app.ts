@@ -36,5 +36,9 @@ export default decorators([
       "/frontend",
       import.meta.resolve("./frontend"),
     ),
+    bundle(
+      "/lib",
+      import.meta.resolve("../lib"),
+    ),
   ]),
 );

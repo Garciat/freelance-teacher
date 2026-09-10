@@ -7,6 +7,7 @@ import { Student } from "@/app/data/student.ts";
 import { PageLayout } from "@/app/pages/_layouts/page.tsx";
 import { Extras } from "@/app/pages/_extra.ts";
 import { PagesStudent, RegisterFormSchema } from "@/app/pages/student/_meta.ts";
+import { makeToastHeaders } from "@/lib/web/toast/backend.ts";
 
 // TODO split into app/pages/student/*
 
@@ -91,18 +92,27 @@ export const routes = [
   route(
     PagesStudent.register.post,
     async ({ body, user }) => {
-      if (body.action === "save") {
-        await Student.create(user.id, {
-          name: body.name,
-          billing: {
-            name: body.billing_name,
-            address: body.billing_address,
-            location: body.billing_location,
-          },
-        });
+      if (body.action === "cancel") {
+        return redirect303(formatRoute(PagesStudent.index, {}));
       }
 
-      return redirect303(formatRoute(PagesStudent.index, {}));
+      await Student.create(user.id, {
+        name: body.name,
+        billing: {
+          name: body.billing_name,
+          address: body.billing_address,
+          location: body.billing_location,
+        },
+        contact: {
+          email: body.contact_email,
+          whatsapp: body.contact_whatsapp ?? "",
+        },
+      });
+
+      return redirect303(
+        formatRoute(PagesStudent.index, {}),
+        makeToastHeaders("✅ New student registered"),
+      );
     },
     { user: Extras.User.required() },
   ),
@@ -158,7 +168,10 @@ export const routes = [
         },
       );
 
-      return redirect303(body._referrer ?? formatRoute(PagesStudent.index, {}));
+      return redirect303(
+        body._referrer ?? formatRoute(PagesStudent.index, {}),
+        makeToastHeaders("✅ Student information updated"),
+      );
     },
     { user: Extras.User.required() },
   ),

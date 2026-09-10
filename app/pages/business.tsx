@@ -13,6 +13,7 @@ import { descriptor, formatRoute, route } from "@/lib/web/route.ts";
 import { Business } from "@/app/data/business.ts";
 import { PageLayout } from "@/app/pages/_layouts/page.tsx";
 import { Extras } from "@/app/pages/_extra.ts";
+import { makeToastHeaders } from "@/lib/web/toast/backend.ts";
 
 const UpdateFormSchema = z.object({
   name: z.string().trim().nonempty().register(FormRegistry, {
@@ -76,11 +77,16 @@ export const routes = [
   route(
     descriptors.save,
     async ({ body, user }) => {
-      if (body.action === "save") {
-        await Business.set(user.id, body);
+      if (body.action === "cancel") {
+        return redirect303(formatRoute(descriptors.index, {}));
       }
 
-      return redirect303(formatRoute(descriptors.index, {}));
+      await Business.set(user.id, body);
+
+      return redirect303(
+        formatRoute(descriptors.index, {}),
+        makeToastHeaders("✅ Business information updated"),
+      );
     },
     { user: Extras.User.required() },
   ),

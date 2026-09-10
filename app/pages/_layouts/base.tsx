@@ -23,6 +23,7 @@ export const BaseLayout: React.FC<BaseLayoutProps> = (
           "imports": {
             "@/app/frontend/": "/frontend/",
             "@/app/shared/": "/shared/",
+            "@/lib/": "/lib/",
             "react": "https://cdn.jsdelivr.net/npm/react/+esm",
             "react/jsx-runtime":
               "https://cdn.jsdelivr.net/npm/react/jsx-runtime/+esm",
@@ -34,6 +35,10 @@ export const BaseLayout: React.FC<BaseLayoutProps> = (
         })}
       </script>
     </head>
-    <body>{children}</body>
+    <body>
+      {children}
+      <div id="toast" popover=""></div>
+      <script type="module" src="/frontend/toast.tsx"></script>
+    </body>
   </html>
 );

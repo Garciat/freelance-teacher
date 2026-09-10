@@ -26,6 +26,10 @@ export type CreateRequest = {
     address: string;
     location: string;
   };
+  contact: {
+    email: string;
+    whatsapp: string;
+  };
 };
 
 export type UpdateRequest = {

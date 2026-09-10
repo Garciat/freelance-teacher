@@ -14,6 +14,7 @@ import { ResendClient } from "@/app/email.ts";
 import { renderToString } from "react-dom/server";
 import { PagesInvoice } from "@/app/pages/invoice/_meta.ts";
 import { PagesStudent } from "@/app/pages/student/_meta.ts";
+import { makeToastHeaders } from "@/lib/web/toast/backend.ts";
 
 export const SENDER = "freelance-teacher@apps.garciat.com";
 
@@ -161,7 +162,10 @@ export const RouteInvoiceSend = {
         throw result.error;
       }
 
-      return redirect303(formatRoute(PagesInvoice.index, {}));
+      return redirect303(
+        formatRoute(PagesInvoice.index, {}),
+        makeToastHeaders(`✅ E-mail sent`),
+      );
     },
     { user: Extras.User.required() },
   ),

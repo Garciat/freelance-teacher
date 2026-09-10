@@ -347,6 +347,19 @@ button {
   }
 }
 
+#toast {
+  inset: auto auto 2rem 50%;
+  transform: translateX(-50%);
+  max-width: calc(100vw - 1em);
+  width: max-content;
+  box-sizing: border-box;
+  padding: .75rem 1rem;
+  border-radius: 2rem;
+  background: color-mix(in oklab, var(--color), transparent 5%);
+  color: var(--background);
+  border: none;
+}
+
 /* Reusable */
 
 .horizontal-fill {
