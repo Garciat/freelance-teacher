@@ -54,6 +54,7 @@ export const routes = [
                     {student.contact?.email && (
                       <a
                         href={`mailto:${student.contact.email}`}
+                        target="_blank"
                         className="pill navigate"
                       >
                         E-mail
@@ -64,6 +65,7 @@ export const routes = [
                         href={`https://wa.me/${
                           student.contact.whatsapp.replaceAll(/[^\d]/g, "")
                         }`}
+                        target="_blank"
                         className="pill navigate"
                       >
                         WhatsApp
